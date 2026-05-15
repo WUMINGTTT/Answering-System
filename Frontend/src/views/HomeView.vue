@@ -1,11 +1,20 @@
 <script setup lang="ts">
-import { RouterLink } from 'vue-router'
+function navigateTo(url: string): void {
+  window.location.href = url
+}
 </script>
 <template>
-  <RouterLink to="/display">显示页</RouterLink>
-  <br>
-  <RouterLink to="/player">选手页</RouterLink>
-  <br>
-  <RouterLink to="/admin">管理页</RouterLink>
+  <div class="box">
+    <el-button @click="navigateTo('/display')" type="primary" size="large" plain>显示页</el-button>
+    <el-button @click="navigateTo('/player')" type="primary" size="large" plain>选手页</el-button>
+    <el-button @click="navigateTo('/admin')" type="primary" size="large" plain>管理页</el-button>
+  </div>
 </template>
-<style scoped></style>
+<style scoped>
+.box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+</style>

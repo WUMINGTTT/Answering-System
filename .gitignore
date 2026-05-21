@@ -1,0 +1,22 @@
+node_modules
+dist
+
+# IDE
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Database (runtime data)
+Backend/src/data/db.json
+*.local
+*.tsbuildinfo
+.claude/settings.local.json

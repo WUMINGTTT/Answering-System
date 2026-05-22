@@ -268,3 +268,372 @@ DELETE /api/questions
 | `options` | `string[]` | 是 | 选项列表 |
 | `answers` | `string[]` | 是 | 正确答案列表 |
 | `score` | `number` | 是 | 题目分值 |
+
+---
+
+## 用户数据结构
+
+```typescript
+type UserRole = 'player' | 'admin';
+
+interface User {
+  id: string;            // 10位纯字母，后端自动生成
+  nickname: string;      // 昵称
+  username: string;      // 用户名
+  password: string;      // 密码
+  totalScore: number;    // 总分
+  scoreDetails: unknown[]; // 得分详情
+  role: UserRole;        // "player" 选手 / "admin" 管理员
+}
+```
+
+---
+
+## 7. 用户注册
+
+```
+POST /api/users/register
+Content-Type: application/json
+```
+
+**请求体：**
+
+```json
+{
+  "nickname": "张三",
+  "username": "zhangsan",
+  "password": "123456"
+}
+```
+
+**成功响应 (201)：**
+
+```json
+{
+  "code": 201,
+  "message": "注册成功",
+  "data": {
+    "id": "aBcDeFgHiJ",
+    "nickname": "张三",
+    "username": "zhangsan",
+    "password": "123456",
+    "totalScore": 0,
+    "scoreDetails": [],
+    "role": "player"
+  }
+}
+```
+
+**失败响应 (400)：**
+
+```json
+{
+  "code": 400,
+  "message": "缺少必填字段: nickname, username, password",
+  "data": null
+}
+```
+
+**失败响应 (409)：**
+
+```json
+{
+  "code": 409,
+  "message": "用户名已存在",
+  "data": null
+}
+```
+
+---
+
+## 8. 用户登录
+
+```
+POST /api/users/login
+Content-Type: application/json
+```
+
+**请求体：**
+
+```json
+{
+  "username": "zhangsan",
+  "password": "123456"
+}
+```
+
+**成功响应 (200)：**
+
+```json
+{
+  "code": 200,
+  "message": "登录成功",
+  "data": {
+    "id": "aBcDeFgHiJ",
+    "nickname": "张三",
+    "username": "zhangsan",
+    "password": "123456",
+    "totalScore": 0,
+    "scoreDetails": [],
+    "role": "player"
+  }
+}
+```
+
+**失败响应 (400)：**
+
+```json
+{
+  "code": 400,
+  "message": "缺少必填字段: username, password",
+  "data": null
+}
+```
+
+**失败响应 (401)：**
+
+```json
+{
+  "code": 401,
+  "message": "密码错误",
+  "data": null
+}
+```
+
+**失败响应 (404)：**
+
+```json
+{
+  "code": 404,
+  "message": "用户不存在",
+  "data": null
+}
+```
+
+---
+
+## 9. 新增用户（管理员创建）
+
+```
+POST /api/users
+Content-Type: application/json
+```
+
+管理员可指定用户角色。
+
+**请求体：**
+
+```json
+{
+  "nickname": "李四",
+  "username": "lisi",
+  "password": "123456",
+  "role": "admin"
+}
+```
+
+**成功响应 (201)：**
+
+```json
+{
+  "code": 201,
+  "message": "用户创建成功",
+  "data": {
+    "id": "kLmNoPqRsT",
+    "nickname": "李四",
+    "username": "lisi",
+    "password": "123456",
+    "totalScore": 0,
+    "scoreDetails": [],
+    "role": "admin"
+  }
+}
+```
+
+**失败响应 (400)：**
+
+```json
+{
+  "code": 400,
+  "message": "缺少必填字段: nickname, username, password, role",
+  "data": null
+}
+```
+
+---
+
+## 10. 获取全部用户
+
+```
+GET /api/users
+```
+
+**成功响应 (200)：**
+
+```json
+{
+  "code": 200,
+  "message": "全部用户获取成功",
+  "data": [
+    {
+      "id": "aBcDeFgHiJ",
+      "nickname": "张三",
+      "username": "zhangsan",
+      "password": "123456",
+      "totalScore": 0,
+      "scoreDetails": [],
+      "role": "player"
+    }
+  ]
+}
+```
+
+---
+
+## 11. 获取单个用户
+
+```
+GET /api/users/:id
+```
+
+**成功响应 (200)：**
+
+```json
+{
+  "code": 200,
+  "message": "用户获取成功",
+  "data": {
+    "id": "aBcDeFgHiJ",
+    "nickname": "张三",
+    "username": "zhangsan",
+    "password": "123456",
+    "totalScore": 0,
+    "scoreDetails": [],
+    "role": "player"
+  }
+}
+```
+
+**失败响应 (404)：**
+
+```json
+{
+  "code": 404,
+  "message": "用户不存在",
+  "data": null
+}
+```
+
+---
+
+## 12. 修改用户信息
+
+```
+PUT /api/users/:id
+Content-Type: application/json
+```
+
+所有业务字段均为可选，至少提供一个。
+
+**请求体：**
+
+```json
+{
+  "nickname": "张三三",
+  "password": "654321"
+}
+```
+
+**成功响应 (200)：**
+
+```json
+{
+  "code": 200,
+  "message": "用户信息修改成功",
+  "data": {
+    "id": "aBcDeFgHiJ",
+    "nickname": "张三三",
+    "username": "zhangsan",
+    "password": "654321",
+    "totalScore": 0,
+    "scoreDetails": [],
+    "role": "player"
+  }
+}
+```
+
+**失败响应 (400)：**
+
+```json
+{
+  "code": 400,
+  "message": "至少需要提供一个要修改的字段: nickname, username, password, role",
+  "data": null
+}
+```
+
+**失败响应 (404)：**
+
+```json
+{
+  "code": 404,
+  "message": "用户不存在",
+  "data": null
+}
+```
+
+**失败响应 (409)：**
+
+```json
+{
+  "code": 409,
+  "message": "用户名已存在",
+  "data": null
+}
+```
+
+---
+
+## 13. 删除单个用户
+
+```
+DELETE /api/users/:id
+```
+
+**成功响应 (200)：**
+
+```json
+{
+  "code": 200,
+  "message": "用户删除成功",
+  "data": null
+}
+```
+
+**失败响应 (404)：**
+
+```json
+{
+  "code": 404,
+  "message": "用户不存在",
+  "data": null
+}
+```
+
+---
+
+## 14. 删除全部用户
+
+```
+DELETE /api/users
+```
+
+**成功响应 (200)：**
+
+```json
+{
+  "code": 200,
+  "message": "全部用户已删除",
+  "data": null
+}
+```

@@ -1,6 +1,6 @@
 import { customAlphabet } from 'nanoid';
 import type { Question, CreateQuestion, UpdateQuestion } from '../types/question.js';
-import { db, initDb } from './db.js';
+import { db } from './db.js';
 
 const generateId = customAlphabet(
   'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
@@ -11,7 +11,6 @@ const generateId = customAlphabet(
 export async function createQuestion(
   data: CreateQuestion,
 ): Promise<Question> {
-  await initDb();
   const question: Question = { id: generateId(), ...data };
   db.data.questions.push(question);
   await db.write();
@@ -22,13 +21,11 @@ export async function createQuestion(
 export async function getQuestion(
   id: string,
 ): Promise<Question | undefined> {
-  await initDb();
   return db.data.questions.find((q) => q.id === id);
 }
 
 /** 获取全部题目 */
 export async function getAllQuestions(): Promise<Question[]> {
-  await initDb();
   return db.data.questions;
 }
 
@@ -37,7 +34,6 @@ export async function updateQuestion(
   id: string,
   data: UpdateQuestion,
 ): Promise<Question | null> {
-  await initDb();
   const index = db.data.questions.findIndex((q) => q.id === id);
   if (index === -1) return null;
   db.data.questions[index] = { ...db.data.questions[index], ...data };
@@ -47,7 +43,6 @@ export async function updateQuestion(
 
 /** 删除题目, 返回是否删除成功 */
 export async function deleteQuestion(id: string): Promise<boolean> {
-  await initDb();
   const index = db.data.questions.findIndex((q) => q.id === id);
   if (index === -1) return false;
   db.data.questions.splice(index, 1);
@@ -57,7 +52,6 @@ export async function deleteQuestion(id: string): Promise<boolean> {
 
 /** 删除全部题目 */
 export async function deleteAllQuestions(): Promise<void> {
-  await initDb();
   db.data.questions = [];
   await db.write();
 }

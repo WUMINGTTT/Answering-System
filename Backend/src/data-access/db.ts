@@ -3,9 +3,11 @@ import { JSONFile } from 'lowdb/node';
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import type { Question } from '../types/question.js';
+import type { User } from '../types/user.js';
 
 export interface Schema {
   questions: Question[];
+  users: User[];
 }
 
 const DB_PATH = resolve(import.meta.dirname, '../data/db.json');
@@ -17,11 +19,11 @@ if (!existsSync(DB_DIR)) {
 
 if (!existsSync(DB_PATH)) {
   console.log('初始化数据库');
-  writeFileSync(DB_PATH, JSON.stringify({ questions: [] }), 'utf-8');
+  writeFileSync(DB_PATH, JSON.stringify({ questions: [], users: [] }), 'utf-8');
 }
 
 const adapter = new JSONFile<Schema>(DB_PATH);
-export const db = new Low<Schema>(adapter, { questions: [] });
+export const db = new Low<Schema>(adapter, { questions: [], users: [] });
 
 export async function initDb(): Promise<void> {
   await db.read();

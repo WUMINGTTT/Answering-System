@@ -2,6 +2,7 @@ import express from 'express';
 import { createServer } from 'node:http';
 import { Server as SocketIOServer } from 'socket.io';
 import questionRoutes from './routers/questionRoutes.js';
+import scoreRoutes from './routers/scoreRoutes.js';
 import userRoutes from './routers/userRoutes.js';
 import { initDb } from './data-access/db.js';
 
@@ -19,6 +20,7 @@ app.get('/', (_req, res) => {
 
 app.use('/api/questions', questionRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/users/:id/scores', scoreRoutes);
 
 io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);

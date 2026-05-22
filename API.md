@@ -637,3 +637,129 @@ DELETE /api/users
   "data": null
 }
 ```
+
+---
+
+## 得分数据结构
+
+```typescript
+interface ScoreDetail {
+  id: string;   // 10位纯字母，后端自动生成
+  score: number; // 得分数，正数加分 / 负数扣分
+  reason: string;// 得分原因
+}
+```
+
+---
+
+## 15. 添加得分
+
+```
+POST /api/users/:id/scores
+Content-Type: application/json
+```
+
+为指定用户添加一条得分记录，同时自动更新该用户的总分。`score` 支持正数和负数。
+
+**请求体：**
+
+```json
+{
+  "score": 10,
+  "reason": "回答正确"
+}
+```
+
+**成功响应 (201)：**
+
+```json
+{
+  "code": 201,
+  "message": "得分添加成功",
+  "data": {
+    "id": "xYzAbCdEfG",
+    "score": 10,
+    "reason": "回答正确"
+  }
+}
+```
+
+**失败响应 (400)：**
+
+```json
+{
+  "code": 400,
+  "message": "缺少必填字段: score, reason",
+  "data": null
+}
+```
+
+**失败响应 (404)：**
+
+```json
+{
+  "code": 404,
+  "message": "用户不存在",
+  "data": null
+}
+```
+
+---
+
+## 16. 删除单条得分
+
+```
+DELETE /api/users/:id/scores/:scoreId
+```
+
+删除一条得分记录，同时自动更新用户总分。
+
+**成功响应 (200)：**
+
+```json
+{
+  "code": 200,
+  "message": "得分删除成功",
+  "data": null
+}
+```
+
+**失败响应 (404)：**
+
+```json
+{
+  "code": 404,
+  "message": "得分记录不存在",
+  "data": null
+}
+```
+
+---
+
+## 17. 删除全部得分
+
+```
+DELETE /api/users/:id/scores
+```
+
+删除指定用户的全部得分记录，总分重置为 0。
+
+**成功响应 (200)：**
+
+```json
+{
+  "code": 200,
+  "message": "全部得分已删除",
+  "data": null
+}
+```
+
+**失败响应 (404)：**
+
+```json
+{
+  "code": 404,
+  "message": "用户不存在",
+  "data": null
+}
+```

@@ -126,5 +126,10 @@ export async function login(req: Request, res: Response): Promise<void> {
     return fail(res, 401, '密码错误');
   }
 
+  res.cookie('userId', user.id, {
+    httpOnly: true,
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 天
+    sameSite: 'lax',
+  });
   ok(res, user, '登录成功');
 }

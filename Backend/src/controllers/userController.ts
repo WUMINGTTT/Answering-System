@@ -131,5 +131,10 @@ export async function login(req: Request, res: Response): Promise<void> {
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 天
     sameSite: 'lax',
   });
+  res.cookie('userRole', user.role, {
+    httpOnly: true,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    sameSite: 'lax',
+  });
   ok(res, user, '登录成功');
 }

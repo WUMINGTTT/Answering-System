@@ -364,7 +364,7 @@ Content-Type: application/json
 
 **成功响应 (200)：**
 
-登录成功后设置 Cookie `userId`，`httpOnly`，有效期 7 天。
+登录成功后设置 Cookie `userId`（用户ID）和 `userRole`（用户身份），`httpOnly`，有效期 7 天。
 
 ```json
 {

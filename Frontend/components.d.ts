@@ -29,6 +29,10 @@ declare module 'vue' {
     ElSubMenu: typeof import('element-plus/es')['ElSubMenu']
     ElTabPane: typeof import('element-plus/es')['ElTabPane']
     ElTabs: typeof import('element-plus/es')['ElTabs']
+    LoginCard: typeof import('./src/components/loginView/loginCard.vue')['default']
+    LoginForm: typeof import('./src/components/loginView/LoginForm.vue')['default']
+    RegisterCard: typeof import('./src/components/loginView/registerCard.vue')['default']
+    RegisterForm: typeof import('./src/components/loginView/RegisterForm.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }

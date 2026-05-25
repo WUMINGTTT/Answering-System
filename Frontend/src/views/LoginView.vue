@@ -1,31 +1,22 @@
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import type { FormInstance, FormRules } from 'element-plus'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import LoginForm from '@/components/loginView/LoginForm.vue'
+import RegisterForm from '@/components/loginView/RegisterForm.vue'
 
+const router = useRouter()
 const activeTab = ref('login')
 
-const loginFormRef = ref<FormInstance>()
-const loginForm = reactive({
-  username: '',
-  password: '',
-})
-
-const loginRules: FormRules = {
-  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
-  password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+function onLoginSuccess(role: string) {
+  if (role === 'admin') {
+    router.push('/admin')
+  } else {
+    router.push('/player')
+  }
 }
 
-const registerFormRef = ref<FormInstance>()
-const registerForm = reactive({
-  nickname: '',
-  username: '',
-  password: '',
-})
-
-const registerRules: FormRules = {
-  nickname: [{ required: true, message: '请输入昵称', trigger: 'blur' }],
-  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
-  password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+function onRegisterSuccess() {
+  activeTab.value = 'login'
 }
 </script>
 
@@ -35,75 +26,12 @@ const registerRules: FormRules = {
       <h2 class="login-title">答题系统</h2>
 
       <el-tabs v-model="activeTab" class="login-tabs">
-        <!-- 登录 -->
         <el-tab-pane label="登录" name="login">
-          <el-form
-            ref="loginFormRef"
-            :model="loginForm"
-            :rules="loginRules"
-            label-position="top"
-          >
-            <el-form-item label="用户名" prop="username">
-              <el-input
-                v-model="loginForm.username"
-                placeholder="请输入用户名"
-              />
-            </el-form-item>
-
-            <el-form-item label="密码" prop="password">
-              <el-input
-                v-model="loginForm.password"
-                type="password"
-                placeholder="请输入密码"
-                show-password
-              />
-            </el-form-item>
-
-            <el-form-item>
-              <el-button type="primary" class="submit-btn">
-                登 录
-              </el-button>
-            </el-form-item>
-          </el-form>
+          <LoginForm @login-success="onLoginSuccess" />
         </el-tab-pane>
 
-        <!-- 注册 -->
         <el-tab-pane label="注册" name="register">
-          <el-form
-            ref="registerFormRef"
-            :model="registerForm"
-            :rules="registerRules"
-            label-position="top"
-          >
-            <el-form-item label="昵称" prop="nickname">
-              <el-input
-                v-model="registerForm.nickname"
-                placeholder="请输入昵称"
-              />
-            </el-form-item>
-
-            <el-form-item label="用户名" prop="username">
-              <el-input
-                v-model="registerForm.username"
-                placeholder="请输入用户名"
-              />
-            </el-form-item>
-
-            <el-form-item label="密码" prop="password">
-              <el-input
-                v-model="registerForm.password"
-                type="password"
-                placeholder="请输入密码"
-                show-password
-              />
-            </el-form-item>
-
-            <el-form-item>
-              <el-button type="primary" class="submit-btn">
-                注 册
-              </el-button>
-            </el-form-item>
-          </el-form>
+          <RegisterForm @register-success="onRegisterSuccess" />
         </el-tab-pane>
       </el-tabs>
     </el-card>
@@ -132,9 +60,5 @@ const registerRules: FormRules = {
 
 .login-tabs {
   --el-tabs-header-margin: 0 0 16px 0;
-}
-
-.submit-btn {
-  width: 100%;
 }
 </style>

@@ -1,51 +1,39 @@
 import client from './client'
-import type { ApiResponse } from '../types/api'
+import type { ResBody } from '../types/api'
 import type { Question, CreateQuestion, UpdateQuestion } from '../types/question'
 
 /**
- * POST /api/questions
- * 添加问题
- *  */
-export function createQuestion(data: CreateQuestion) {
-  return client.post<ApiResponse<Question>>('/questions', data)
-}
+ * 新增题目
+ */
+export const createQuestion = (data: CreateQuestion) =>
+  client.post<ResBody<Question>>('/questions', data)
 
 /**
- * GET /api/questions
- * 获取所有问题
- *  */
-export function getAllQuestions() {
-  return client.get<ApiResponse<Question[]>>('/questions')
-}
+ * 获取全部题目
+ */
+export const getAllQuestions = () =>
+  client.get<ResBody<Question[]>>('/questions')
 
 /**
- * GET /api/questions/:id
- * 获取问题
- *  */
-export function getQuestion(id: string) {
-  return client.get<ApiResponse<Question>>(`/questions/${id}`)
-}
+ * 获取单个题目
+ */
+export const getQuestion = (id: string) =>
+  client.get<ResBody<Question>>(`/questions/${id}`)
 
 /**
- * PUT /api/questions/:id
- * 修改问题
- *  */
-export function updateQuestion(id: string, data: UpdateQuestion) {
-  return client.put<ApiResponse<Question>>(`/questions/${id}`, data)
-}
+ * 修改题目
+ */
+export const updateQuestion = (id: string, data: UpdateQuestion) =>
+  client.put<ResBody<Question>>(`/questions/${id}`, data)
 
 /**
- * DELETE /api/questions/:id
- * 删除问题
- *  */
-export function deleteQuestion(id: string) {
-  return client.delete<ApiResponse<null>>(`/questions/${id}`)
-}
+ * 删除单个题目
+ */
+export const deleteQuestion = (id: string) =>
+  client.delete<ResBody<null>>(`/questions/${id}`)
 
 /**
- * DELETE /api/questions
- * 删除所有问题
- *  */
-export function deleteAllQuestions() {
-  return client.delete<ApiResponse<null>>('/questions')
-}
+ * 删除全部题目
+ */
+export const deleteAllQuestions = () =>
+  client.delete<ResBody<null>>('/questions')

@@ -1,5 +1,5 @@
 /** 后端统一响应格式 */
-export interface ApiResponse<T> {
+export interface ResBody<T> {
   code: number
   message: string
   data: T

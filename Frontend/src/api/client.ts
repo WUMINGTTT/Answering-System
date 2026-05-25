@@ -7,14 +7,13 @@ const client = axios.create({
 })
 
 // 响应拦截器：统一提取 data
-client.interceptors.response.use(
-  (response) => response.data,
-  (error) => {
-    const message =
-      error.response?.data?.message || error.message || '请求失败'
-    console.error('[API Error]', message)
-    return Promise.reject(error)
-  },
-)
+// client.interceptors.response.use(
+//   (response) => response.data,
+//   (error) => {
+//     const message = error.response?.data?.message || error.message || '请求失败'
+//     console.error('[API Error]', message)
+//     return Promise.reject(error)
+//   },
+// )
 
 export default client

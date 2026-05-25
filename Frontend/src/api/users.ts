@@ -1,66 +1,51 @@
 import client from './client'
-import type { ApiResponse } from '../types/api'
+import type { ResBody } from '../types/api'
 import type { User, CreateUser, RegisterUser, LoginUser, UpdateUser } from '../types/user'
-/**
- *  POST /api/users/register
- *  用户注册
- *  */
-export function register(data: RegisterUser) {
-  return client.post<ApiResponse<User>>('/users/register', data)
-}
 
 /**
- * POST /api/users/login
+ * 用户注册
+ */
+export const register = (data: RegisterUser) =>
+  client.post<ResBody<User>>('/users/register', data)
+
+/**
  * 用户登录
- *  */
-export function login(data: LoginUser) {
-  return client.post<ApiResponse<User>>('/users/login', data)
-}
+ */
+export const login = (data: LoginUser) =>
+  client.post<ResBody<User>>('/users/login', data)
 
 /**
- * POST /api/users
- * 添加用户
- *  */
-export function createUser(data: CreateUser) {
-  return client.post<ApiResponse<User>>('/users', data)
-}
+ * 新增用户（管理员创建）
+ */
+export const createUser = (data: CreateUser) =>
+  client.post<ResBody<User>>('/users', data)
 
-/** 
- * GET /api/users
- * 获取所有用户
- *  */
-export function getAllUsers() {
-  return client.get<ApiResponse<User[]>>('/users')
-}
+/**
+ * 获取全部用户
+ */
+export const getAllUsers = () =>
+  client.get<ResBody<User[]>>('/users')
 
-/** 
- * GET /api/users/:id 
- * 获取用户
- * */
-export function getUser(id: string) {
-  return client.get<ApiResponse<User>>(`/users/${id}`)
-}
+/**
+ * 获取单个用户
+ */
+export const getUser = (id: string) =>
+  client.get<ResBody<User>>(`/users/${id}`)
 
-/** 
- * PUT /api/users/:id 
- * 修改用户
- * */
-export function updateUser(id: string, data: UpdateUser) {
-  return client.put<ApiResponse<User>>(`/users/${id}`, data)
-}
+/**
+ * 修改用户信息
+ */
+export const updateUser = (id: string, data: UpdateUser) =>
+  client.put<ResBody<User>>(`/users/${id}`, data)
 
-/** 
- * DELETE /api/users/:id
- * 删除用户
- *  */
-export function deleteUser(id: string) {
-  return client.delete<ApiResponse<null>>(`/users/${id}`)
-}
+/**
+ * 删除单个用户
+ */
+export const deleteUser = (id: string) =>
+  client.delete<ResBody<null>>(`/users/${id}`)
 
-/** 
- * DELETE /api/users
- * 删除所有用户
- *  */
-export function deleteAllUsers() {
-  return client.delete<ApiResponse<null>>('/users')
-}
+/**
+ * 删除全部用户
+ */
+export const deleteAllUsers = () =>
+  client.delete<ResBody<null>>('/users')

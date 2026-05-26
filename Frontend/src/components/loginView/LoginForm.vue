@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
-import { ElMessage } from 'element-plus'
 import { login } from '@/api/users'
 
 const emit = defineEmits<{
-  loginSuccess: [role: string]
+  loginSuccess: [role: string, message: string]
+  loginError: [err: unknown]
 }>()
 
 const loading = ref(false)
@@ -27,8 +27,9 @@ async function onSubmit() {
   loading.value = true
   try {
     const { data: res } = await login(form)
-    ElMessage.success(res.message)
-    emit('loginSuccess', res.data.role)
+    emit('loginSuccess', res.data.role, res.message)
+  } catch (err) {
+    emit('loginError', err)
   } finally {
     loading.value = false
   }
@@ -36,35 +37,17 @@ async function onSubmit() {
 </script>
 
 <template>
-  <el-form
-    ref="formRef"
-    :model="form"
-    :rules="rules"
-    label-position="top"
-  >
+  <el-form ref="formRef" :model="form" :rules="rules" label-position="top">
     <el-form-item label="用户名" prop="username">
-      <el-input
-        v-model="form.username"
-        placeholder="请输入用户名"
-      />
+      <el-input v-model="form.username" placeholder="请输入用户名" />
     </el-form-item>
 
     <el-form-item label="密码" prop="password">
-      <el-input
-        v-model="form.password"
-        type="password"
-        placeholder="请输入密码"
-        show-password
-      />
+      <el-input v-model="form.password" type="password" placeholder="请输入密码" show-password />
     </el-form-item>
 
     <el-form-item>
-      <el-button
-        type="primary"
-        class="submit-btn"
-        :loading="loading"
-        @click="onSubmit"
-      >
+      <el-button type="primary" class="submit-btn" :loading="loading" @click="onSubmit">
         登 录
       </el-button>
     </el-form-item>

@@ -14,6 +14,14 @@ export default defineConfig({
     vueDevTools(),
     AutoImport({
       resolvers: [ElementPlusResolver()],
+      // 需要自动导入的库
+      imports: ['vue', 'vue-router'],
+      // 生成 TypeScript 全局类型声明文件
+      dts: 'src/auto-imports.d.ts',
+      // 生成 ESLint 配置，防止报错
+      eslintrc: {
+        enabled: true,
+      },
     }),
     Components({
       resolvers: [ElementPlusResolver()],

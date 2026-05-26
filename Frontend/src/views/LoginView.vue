@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import axios from 'axios'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import LoginForm from '@/components/loginView/LoginForm.vue'
@@ -7,7 +8,8 @@ import RegisterForm from '@/components/loginView/RegisterForm.vue'
 const router = useRouter()
 const activeTab = ref('login')
 
-function onLoginSuccess(role: string) {
+function onLoginSuccess(role: string, msg: string) {
+  ElMessage.success(msg)
   if (role === 'admin') {
     router.push('/admin')
   } else {
@@ -15,8 +17,25 @@ function onLoginSuccess(role: string) {
   }
 }
 
-function onRegisterSuccess() {
+function onRegisterSuccess(msg: string) {
+  ElMessage.success(msg)
   activeTab.value = 'login'
+}
+
+function getErrorMessage(err: unknown): string {
+  if (axios.isAxiosError(err)) {
+    return err.response?.data?.message || '服务器错误，请稍后重试'
+  }
+  if (err instanceof Error) return err.message
+  return '未知错误，请稍后重试'
+}
+
+function onLoginError(err: unknown) {
+  ElMessage.error(getErrorMessage(err))
+}
+
+function onRegisterError(err: unknown) {
+  ElMessage.error(getErrorMessage(err))
 }
 </script>
 
@@ -27,11 +46,11 @@ function onRegisterSuccess() {
 
       <el-tabs v-model="activeTab" class="login-tabs">
         <el-tab-pane label="登录" name="login">
-          <LoginForm @login-success="onLoginSuccess" />
+          <LoginForm @login-success="onLoginSuccess" @login-error="onLoginError" />
         </el-tab-pane>
 
         <el-tab-pane label="注册" name="register">
-          <RegisterForm @register-success="onRegisterSuccess" />
+          <RegisterForm @register-success="onRegisterSuccess" @register-error="onRegisterError" />
         </el-tab-pane>
       </el-tabs>
     </el-card>
@@ -43,7 +62,7 @@ function onRegisterSuccess() {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
+  min-height: 98vh;
   background: #f5f7fa;
 }
 

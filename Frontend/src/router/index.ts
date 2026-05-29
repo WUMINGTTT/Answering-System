@@ -4,6 +4,7 @@ import LoginView from '@/views/LoginView.vue'
 import DisplayView from '@/views/DisplayView.vue'
 import PlayerView from '@/views/PlayerView.vue'
 import AdminView from '@/views/AdminView.vue'
+import { getMe } from '@/api/users'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -34,6 +35,32 @@ const router = createRouter({
       component: AdminView,
     },
   ],
+})
+
+const protectedRoutes = ['/player', '/admin', '/display']
+
+router.beforeEach(async (to) => {
+  // 访问受保护页面：未登录则重定向到登录页
+  if (protectedRoutes.includes(to.path)) {
+    try {
+      await getMe()
+    } catch {
+      ElMessage.error('请先登录')
+      return { path: '/login', replace: true }
+    }
+  }
+
+  // 访问登录页：已登录则根据角色重定向
+  if (to.path === '/login') {
+    try {
+      const { data: res } = await getMe()
+      const role = res.data.role
+      ElMessage.success(`欢迎回来，${res.data.username}`)
+      return { path: role === 'admin' ? '/admin' : '/player', replace: true }
+    } catch {
+      // 未登录，正常访问登录页
+    }
+  }
 })
 
 export default router

@@ -109,6 +109,19 @@ export async function removeAll(_req: Request, res: Response): Promise<void> {
   ok(res, null, '全部用户已删除');
 }
 
+/** GET /api/users/me — 通过 cookie 获取当前登录用户 */
+export async function me(req: Request, res: Response): Promise<void> {
+  const userId = req.cookies?.userId;
+  if (!userId) {
+    return fail(res, 401, '未登录');
+  }
+  const user = await userDao.getUser(userId);
+  if (!user) {
+    return fail(res, 401, '用户不存在');
+  }
+  ok(res, user, '当前用户获取成功');
+}
+
 /** POST /api/users/login — 用户登录（用户名 + 密码） */
 export async function login(req: Request, res: Response): Promise<void> {
   const { username, password } = req.body;

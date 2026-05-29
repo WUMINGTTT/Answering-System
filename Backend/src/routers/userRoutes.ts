@@ -12,6 +12,9 @@ router.post('/login', userController.login);
 /** POST /api/users — 新增用户（管理员创建） */
 router.post('/', userController.create);
 
+/** GET /api/users/me — 获取当前登录用户（通过 cookie） */
+router.get('/me', userController.me);
+
 /** GET /api/users — 获取全部用户 */
 router.get('/', userController.getAll);
 

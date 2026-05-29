@@ -9,6 +9,12 @@ export const register = (data: RegisterUser) =>
   client.post<ResBody<User>>('/users/register', data)
 
 /**
+ * 获取当前登录用户（通过 cookie）
+ */
+export const getMe = () =>
+  client.get<ResBody<User>>('/users/me')
+
+/**
  * 用户登录
  */
 export const login = (data: LoginUser) =>

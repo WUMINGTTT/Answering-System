@@ -15,7 +15,7 @@ export async function addScore(
   const user = db.data.users.find((u) => u.id === userId);
   if (!user) return null;
 
-  const detail: ScoreDetail = { id: generateId(), ...data };
+  const detail: ScoreDetail = { id: generateId(), ...data, createdAt: Date.now() };
   user.scoreDetails.push(detail);
   user.totalScore += data.score;
   await db.write();

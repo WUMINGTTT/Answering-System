@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
-import { Plus, Delete, Edit, View, Hide, DocumentCopy, Search, InfoFilled } from '@element-plus/icons-vue'
+import { Plus, Delete, Edit, View, Hide, DocumentCopy, Search, InfoFilled, Download } from '@element-plus/icons-vue'
 import { getAllUsers, createUser, updateUser, deleteUser, deleteAllUsers } from '@/api/users'
 import { addScore, deleteScore } from '@/api/scores'
 import type { User } from '@/types/user'
 import type { ScoreDetail, CreateScore } from '@/types/score'
+import * as XLSX from 'xlsx'
 
 // ---------- 用户列表 ----------
 const users = ref<User[]>([])
@@ -197,6 +198,33 @@ function onResize() {
   tableMaxHeight.value = window.innerHeight - 140
 }
 
+// ---------- 导出 Excel ----------
+function exportToExcel() {
+  const rows: Record<string, string | number>[] = []
+
+  for (const user of users.value) {
+    const details = user.scoreDetails.length > 0 ? user.scoreDetails : [{} as ScoreDetail]
+    for (const d of details) {
+      rows.push({
+        昵称: user.nickname,
+        用户名: user.username,
+        角色: user.role === 'admin' ? '管理员' : '选手',
+        总分: user.totalScore,
+        得分分值: 'score' in (d as ScoreDetail) ? d.score : '',
+        得分原因: 'reason' in (d as ScoreDetail) ? d.reason : '',
+        得分时间: (d as ScoreDetail).createdAt
+          ? new Date(d.createdAt).toLocaleString()
+          : '',
+      })
+    }
+  }
+
+  const ws = XLSX.utils.json_to_sheet(rows)
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, '选手得分详情')
+  XLSX.writeFile(wb, `选手得分详情_${new Date().toLocaleDateString()}.xlsx`)
+}
+
 onMounted(() => {
   fetchUsers()
   window.addEventListener('resize', onResize)
@@ -292,6 +320,7 @@ async function onDeleteScore(scoreId: string, score: number) {
       </el-radio-group>
       <div class="control-actions">
         <el-button type="primary" :icon="Plus" @click="openAddDialog">新增用户</el-button>
+        <el-button type="success" :icon="Download" @click="exportToExcel">导出Excel</el-button>
         <el-button type="danger" :icon="Delete" @click="onDeleteAll">删除全部用户</el-button>
       </div>
     </div>
@@ -408,8 +437,13 @@ async function onDeleteScore(scoreId: string, score: number) {
         style="width: 100%; margin-top: 16px"
         empty-text="暂无得分记录"
       >
-        <el-table-column prop="score" label="分值" width="100" />
-        <el-table-column prop="reason" label="原因" min-width="200" />
+        <el-table-column prop="score" label="分值" width="80" />
+        <el-table-column prop="reason" label="原因" min-width="160" />
+        <el-table-column label="时间" width="160">
+          <template #default="{ row }">
+            {{ row.createdAt ? new Date(row.createdAt).toLocaleString() : '-' }}
+          </template>
+        </el-table-column>
         <el-table-column label="操作" width="80">
           <template #default="{ row }">
             <el-button type="danger" link :icon="Delete" @click="onDeleteScore(row.id, row.score)" />

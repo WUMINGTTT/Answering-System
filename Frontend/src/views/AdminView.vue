@@ -1,9 +1,17 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { Monitor, User, Document } from '@element-plus/icons-vue'
 import UserManagement from '@/components/adminView/UserManagement.vue'
 
-const activeMenu = ref('dashboard')
+const route = useRoute()
+const router = useRouter()
+
+const activeMenu = ref((route.query.tab as string) || 'dashboard')
+
+watch(activeMenu, (val) => {
+  router.replace({ query: { tab: val } })
+})
 </script>
 
 <template>

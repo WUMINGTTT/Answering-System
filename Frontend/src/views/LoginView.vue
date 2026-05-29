@@ -1,19 +1,17 @@
 <script setup lang="ts">
 import axios from 'axios'
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
 import LoginForm from '@/components/loginView/LoginForm.vue'
 import RegisterForm from '@/components/loginView/RegisterForm.vue'
 
-const router = useRouter()
 const activeTab = ref('login')
 
 function onLoginSuccess(role: string, msg: string) {
   ElMessage.success(msg)
   if (role === 'admin') {
-    router.push('/admin')
+    window.location.replace('/admin')
   } else {
-    router.push('/player')
+    window.location.replace('/player')
   }
 }
 

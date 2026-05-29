@@ -3,6 +3,7 @@ import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Monitor, User, Document } from '@element-plus/icons-vue'
 import UserManagement from '@/components/adminView/UserManagement.vue'
+import QuestionManagement from '@/components/adminView/QuestionManagement.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -45,9 +46,7 @@ watch(activeMenu, (val) => {
         <h2>控制台</h2>
       </div>
       <UserManagement v-else-if="activeMenu === 'users'" />
-      <div v-else-if="activeMenu === 'questions'" class="page-placeholder">
-        <h2>题目管理</h2>
-      </div>
+      <QuestionManagement v-else-if="activeMenu === 'questions'" />
     </el-main>
   </el-container>
 </template>

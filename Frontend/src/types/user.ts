@@ -1,3 +1,5 @@
+import type { ScoreDetail } from './score'
+
 export type UserRole = 'player' | 'admin'
 
 export interface User {
@@ -6,7 +8,7 @@ export interface User {
   username: string
   password: string
   totalScore: number
-  scoreDetails: unknown[]
+  scoreDetails: ScoreDetail[]
   role: UserRole
 }
 

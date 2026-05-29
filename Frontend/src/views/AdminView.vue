@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Monitor, User, Document } from '@element-plus/icons-vue'
+import UserManagement from '@/components/adminView/UserManagement.vue'
 
 const activeMenu = ref('dashboard')
 </script>
@@ -35,9 +36,7 @@ const activeMenu = ref('dashboard')
       <div v-if="activeMenu === 'dashboard'" class="page-placeholder">
         <h2>控制台</h2>
       </div>
-      <div v-else-if="activeMenu === 'users'" class="page-placeholder">
-        <h2>用户管理</h2>
-      </div>
+      <UserManagement v-else-if="activeMenu === 'users'" />
       <div v-else-if="activeMenu === 'questions'" class="page-placeholder">
         <h2>题目管理</h2>
       </div>

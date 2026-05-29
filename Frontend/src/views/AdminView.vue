@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Monitor, User, Document } from '@element-plus/icons-vue'
+import { Monitor, User, Document, Fold, Expand } from '@element-plus/icons-vue'
 import UserManagement from '@/components/adminView/UserManagement.vue'
 import QuestionManagement from '@/components/adminView/QuestionManagement.vue'
 
@@ -9,6 +9,11 @@ const route = useRoute()
 const router = useRouter()
 
 const activeMenu = ref((route.query.tab as string) || 'dashboard')
+const isCollapse = ref(false)
+
+function toggleCollapse() {
+  isCollapse.value = !isCollapse.value
+}
 
 watch(activeMenu, (val) => {
   router.replace({ query: { tab: val } })
@@ -17,10 +22,14 @@ watch(activeMenu, (val) => {
 
 <template>
   <el-container class="admin-container">
-    <el-aside width="220px">
-      <div class="logo">后台管理</div>
+    <el-aside :width="isCollapse ? '64px' : '220px'">
+      <div class="logo">
+        <span v-if="!isCollapse">后台管理</span>
+        <el-button :icon="isCollapse ? Expand : Fold" text class="toggle-btn" @click="toggleCollapse" />
+      </div>
       <el-menu
         :default-active="activeMenu"
+        :collapse="isCollapse"
         background-color="#304156"
         text-color="#bfcbd9"
         active-text-color="#409eff"
@@ -28,15 +37,15 @@ watch(activeMenu, (val) => {
       >
         <el-menu-item index="dashboard">
           <el-icon><Monitor /></el-icon>
-          <span>控制台</span>
+          <template #title>控制台</template>
         </el-menu-item>
         <el-menu-item index="users">
           <el-icon><User /></el-icon>
-          <span>用户管理</span>
+          <template #title>用户管理</template>
         </el-menu-item>
         <el-menu-item index="questions">
           <el-icon><Document /></el-icon>
-          <span>题目管理</span>
+          <template #title>题目管理</template>
         </el-menu-item>
       </el-menu>
     </el-aside>
@@ -59,16 +68,29 @@ watch(activeMenu, (val) => {
 .el-aside {
   background-color: #304156;
   overflow: hidden;
+  transition: width 0.3s;
 }
 
 .logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   height: 60px;
-  line-height: 60px;
-  text-align: center;
   color: #fff;
   font-size: 18px;
   font-weight: bold;
   background-color: #2b3a4a;
+  transition: padding 0.3s;
+}
+
+.toggle-btn {
+  color: #bfcbd9;
+  font-size: 20px;
+  background-color: transparent;
+}
+
+.toggle-btn:hover {
+  background-color: transparent !important; 
 }
 
 .el-menu {

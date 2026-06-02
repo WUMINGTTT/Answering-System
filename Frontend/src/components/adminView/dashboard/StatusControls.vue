@@ -116,7 +116,7 @@ const QUESTION_STATUS_OPTIONS: StatusOption[] = [
 
 .status-label {
   font-size: 15px;
-  color: #606266;
+  color: var(--text-regular);
   font-weight: 500;
 }
 
@@ -132,7 +132,7 @@ const QUESTION_STATUS_OPTIONS: StatusOption[] = [
   align-items: center;
   justify-content: center;
   padding-left: 40px;
-  border-left: 1px solid #ebeef5;
+  border-left: 1px solid var(--border-base);
   flex-shrink: 0;
 }
 
@@ -176,7 +176,7 @@ const QUESTION_STATUS_OPTIONS: StatusOption[] = [
   .status-actions {
     padding-left: 0;
     border-left: none;
-    border-top: 1px solid #ebeef5;
+    border-top: 1px solid var(--border-base);
     padding-top: 20px;
   }
 }

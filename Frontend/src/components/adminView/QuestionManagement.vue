@@ -438,7 +438,7 @@ onUnmounted(() => {
 
 <style scoped>
 .question-management {
-  background: #fff;
+  background: var(--bg-card);
   border-radius: 4px;
   padding: 20px;
 }
@@ -454,7 +454,7 @@ onUnmounted(() => {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-  color: #303133;
+  color: var(--text-primary);
 }
 
 .control-actions {
@@ -468,7 +468,7 @@ onUnmounted(() => {
   gap: 4px;
   padding: 10px 16px;
   margin-bottom: 12px;
-  background: #f5f7fa;
+  background: var(--bg-hover);
   border-radius: 6px;
 }
 
@@ -482,12 +482,12 @@ onUnmounted(() => {
 .summary-num {
   font-size: 20px;
   font-weight: 700;
-  color: #303133;
+  color: var(--text-primary);
 }
 
 .summary-label {
   font-size: 13px;
-  color: #909399;
+  color: var(--text-secondary);
 }
 
 .summary-item--required .summary-num {
@@ -527,7 +527,7 @@ onUnmounted(() => {
 
 .confirm-message {
   font-size: 15px;
-  color: #303133;
+  color: var(--text-primary);
   line-height: 1.6;
 }
 </style>

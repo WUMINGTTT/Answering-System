@@ -482,7 +482,7 @@ async function onDeleteScore(scoreId: string, score: number) {
 
 <style scoped>
 .user-management {
-  background: #fff;
+  background: var(--bg-card);
   border-radius: 4px;
   padding: 20px;
 }
@@ -498,7 +498,7 @@ async function onDeleteScore(scoreId: string, score: number) {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-  color: #303133;
+  color: var(--text-primary);
 }
 
 .control-actions {
@@ -512,7 +512,7 @@ async function onDeleteScore(scoreId: string, score: number) {
   gap: 4px;
   padding: 10px 16px;
   margin-bottom: 12px;
-  background: #f5f7fa;
+  background: var(--bg-hover);
   border-radius: 6px;
 }
 
@@ -526,12 +526,12 @@ async function onDeleteScore(scoreId: string, score: number) {
 .summary-num {
   font-size: 20px;
   font-weight: 700;
-  color: #303133;
+  color: var(--text-primary);
 }
 
 .summary-label {
   font-size: 13px;
-  color: #909399;
+  color: var(--text-secondary);
 }
 
 .summary-item--player .summary-num {
@@ -564,12 +564,12 @@ async function onDeleteScore(scoreId: string, score: number) {
   margin-top: 12px;
   text-align: right;
   font-size: 14px;
-  color: #303133;
+  color: var(--text-primary);
 }
 
 .confirm-message {
   font-size: 15px;
-  color: #303133;
+  color: var(--text-primary);
   line-height: 1.6;
 }
 </style>

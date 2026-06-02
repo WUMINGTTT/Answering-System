@@ -141,9 +141,9 @@ onMounted(() => {
         >
           <div
             class="item-avatar"
-            :style="{ background: isCurrentQuestion(q) ? '#ecf5ff' : undefined }"
+            :style="{ background: isCurrentQuestion(q) ? 'var(--bg-active)' : undefined }"
           >
-            <el-icon :size="20" :color="isCurrentQuestion(q) ? '#409eff' : undefined">
+            <el-icon :size="20" :color="isCurrentQuestion(q) ? 'var(--color-primary)' : undefined">
               <QuestionFilled />
             </el-icon>
           </div>
@@ -180,7 +180,7 @@ onMounted(() => {
 
 .list-card :deep(.el-card__header) {
   padding: 14px 18px;
-  border-bottom: 1px solid #ebeef5;
+  border-bottom: 1px solid var(--border-base);
   flex-shrink: 0;
 }
 
@@ -205,12 +205,12 @@ onMounted(() => {
   gap: 8px;
   font-size: 15px;
   font-weight: 600;
-  color: #303133;
+  color: var(--text-primary);
 }
 
 .card-count {
   font-size: 12px;
-  color: #909399;
+  color: var(--text-secondary);
   font-weight: 400;
 }
 
@@ -251,7 +251,7 @@ onMounted(() => {
   gap: 12px;
   cursor: pointer;
   transition: background 0.15s ease;
-  border-bottom: 1px solid #f2f3f5;
+  border-bottom: 1px solid var(--border-light);
 }
 
 .list-item:last-child {
@@ -259,23 +259,23 @@ onMounted(() => {
 }
 
 .list-item:hover {
-  background: #f5f7fa;
+  background: var(--bg-hover);
 }
 
 .list-item.is-current {
-  background: #ecf5ff;
-  border-left: 3px solid #409eff;
+  background: var(--bg-active);
+  border-left: 3px solid var(--color-primary);
 }
 
 .item-avatar {
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: #f5f7fa;
+  background: var(--bg-hover);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #909399;
+  color: var(--text-secondary);
   flex-shrink: 0;
 }
 
@@ -287,7 +287,7 @@ onMounted(() => {
 .item-name {
   font-size: 14px;
   font-weight: 500;
-  color: #303133;
+  color: var(--text-primary);
   line-height: 1.4;
 }
 
@@ -312,7 +312,7 @@ onMounted(() => {
 
 .item-score {
   font-size: 14px;
-  color: #409eff;
+  color: var(--color-primary);
   font-weight: 600;
 }
 </style>

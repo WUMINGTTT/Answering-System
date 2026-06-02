@@ -119,7 +119,7 @@ function categoryTagType(cat: string) {
 
 .current-card :deep(.el-card__header) {
   padding: 14px 18px;
-  border-bottom: 1px solid #ebeef5;
+  border-bottom: 1px solid var(--border-base);
   flex-shrink: 0;
 }
 
@@ -155,7 +155,7 @@ function categoryTagType(cat: string) {
   gap: 8px;
   font-size: 15px;
   font-weight: 600;
-  color: #303133;
+  color: var(--text-primary);
 }
 
 /* 题目详情 */
@@ -165,7 +165,7 @@ function categoryTagType(cat: string) {
 
 .qd-stem {
   font-size: 15px;
-  color: #303133;
+  color: var(--text-primary);
   font-weight: 500;
   line-height: 1.6;
   margin-bottom: 12px;
@@ -181,7 +181,7 @@ function categoryTagType(cat: string) {
 
 .qd-score {
   font-size: 14px;
-  color: #409eff;
+  color: var(--color-primary);
   font-weight: 600;
   margin-left: auto;
 }
@@ -189,13 +189,13 @@ function categoryTagType(cat: string) {
 /* 选项 & 答案 */
 .qd-section-label {
   font-size: 12px;
-  color: #909399;
+  color: var(--text-secondary);
   margin-top: 10px;
   margin-bottom: 6px;
 }
 
 .qd-options {
-  border-top: 1px dashed #e4e7ed;
+  border-top: 1px dashed var(--border-base);
   margin-top: 10px;
 }
 
@@ -209,19 +209,19 @@ function categoryTagType(cat: string) {
 .qd-option-letter {
   font-size: 13px;
   font-weight: 600;
-  color: #409eff;
+  color: var(--color-primary);
   flex-shrink: 0;
   min-width: 18px;
 }
 
 .qd-option-text {
   font-size: 13px;
-  color: #606266;
+  color: var(--text-regular);
   line-height: 1.5;
 }
 
 .qd-answers {
-  border-top: 1px dashed #e4e7ed;
+  border-top: 1px dashed var(--border-base);
   margin-top: 10px;
 }
 
@@ -239,12 +239,12 @@ function categoryTagType(cat: string) {
   justify-content: center;
   gap: 8px;
   padding: 60px 20px;
-  color: #c0c4cc;
+  color: var(--text-placeholder);
   font-size: 14px;
 }
 
 .empty-hint {
   font-size: 12px;
-  color: #dcdfe6;
+  color: var(--text-placeholder);
 }
 </style>

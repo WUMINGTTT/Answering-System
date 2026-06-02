@@ -265,7 +265,7 @@ onMounted(() => {
 
 .list-card :deep(.el-card__header) {
   padding: 14px 18px;
-  border-bottom: 1px solid #ebeef5;
+  border-bottom: 1px solid var(--border-base);
   flex-shrink: 0;
 }
 
@@ -290,12 +290,12 @@ onMounted(() => {
   gap: 8px;
   font-size: 15px;
   font-weight: 600;
-  color: #303133;
+  color: var(--text-primary);
 }
 
 .card-count {
   font-size: 12px;
-  color: #909399;
+  color: var(--text-secondary);
   font-weight: 400;
 }
 
@@ -331,7 +331,7 @@ onMounted(() => {
   gap: 12px;
   cursor: pointer;
   transition: background 0.15s ease;
-  border-bottom: 1px solid #f2f3f5;
+  border-bottom: 1px solid var(--border-light);
 }
 
 .list-item:last-child {
@@ -339,18 +339,18 @@ onMounted(() => {
 }
 
 .list-item:hover {
-  background: #f5f7fa;
+  background: var(--bg-hover);
 }
 
 .item-avatar {
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: #f5f7fa;
+  background: var(--bg-hover);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #909399;
+  color: var(--text-secondary);
   flex-shrink: 0;
 }
 
@@ -362,13 +362,13 @@ onMounted(() => {
 .item-name {
   font-size: 14px;
   font-weight: 500;
-  color: #303133;
+  color: var(--text-primary);
   line-height: 1.4;
 }
 
 .item-sub {
   font-size: 12px;
-  color: #909399;
+  color: var(--text-secondary);
   margin-top: 2px;
 }
 
@@ -381,12 +381,12 @@ onMounted(() => {
 
 .item-score {
   font-size: 14px;
-  color: #409eff;
+  color: var(--color-primary);
   font-weight: 600;
 }
 
 .item-arrow {
-  color: #c0c4cc;
+  color: var(--text-placeholder);
   font-size: 14px;
 }
 
@@ -397,7 +397,7 @@ onMounted(() => {
   align-items: center;
   margin-bottom: 16px;
   padding: 12px 16px;
-  background: #f5f7fa;
+  background: var(--bg-hover);
   border-radius: 8px;
 }
 
@@ -410,31 +410,31 @@ onMounted(() => {
 .detail-user-name {
   font-size: 16px;
   font-weight: 600;
-  color: #303133;
+  color: var(--text-primary);
 }
 
 .detail-user-total {
   font-size: 14px;
-  color: #606266;
+  color: var(--text-regular);
 }
 
 .detail-user-total strong {
-  color: #409eff;
+  color: var(--color-primary);
   font-size: 16px;
 }
 
 .detail-user-count {
   font-size: 12px;
-  color: #909399;
+  color: var(--text-secondary);
 }
 
 /* 添加得分行内表单 */
 .add-score-inline {
   margin-bottom: 16px;
   padding: 12px 16px;
-  background: #ecf5ff;
+  background: var(--bg-active);
   border-radius: 8px;
-  border: 1px solid #d9ecff;
+  border: 1px solid var(--border-base);
 }
 
 .add-score-row {
@@ -445,7 +445,7 @@ onMounted(() => {
 
 .add-score-label {
   font-size: 13px;
-  color: #606266;
+  color: var(--text-regular);
   white-space: nowrap;
 }
 
@@ -462,6 +462,6 @@ onMounted(() => {
 
 .score-time {
   font-size: 12px;
-  color: #909399;
+  color: var(--text-secondary);
 }
 </style>

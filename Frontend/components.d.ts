@@ -42,6 +42,7 @@ declare module 'vue' {
     ElTabPane: typeof import('element-plus/es')['ElTabPane']
     ElTabs: typeof import('element-plus/es')['ElTabs']
     ElTag: typeof import('element-plus/es')['ElTag']
+    ElTooltip: typeof import('element-plus/es')['ElTooltip']
     LoginCard: typeof import('./src/components/loginView/loginCard.vue')['default']
     LoginForm: typeof import('./src/components/loginView/LoginForm.vue')['default']
     PlayerList: typeof import('./src/components/adminView/dashboard/PlayerList.vue')['default']
@@ -52,6 +53,7 @@ declare module 'vue' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     StatusControls: typeof import('./src/components/adminView/dashboard/StatusControls.vue')['default']
+    ThemeToggle: typeof import('./src/components/ThemeToggle.vue')['default']
     UserManagement: typeof import('./src/components/adminView/UserManagement.vue')['default']
   }
   export interface GlobalDirectives {

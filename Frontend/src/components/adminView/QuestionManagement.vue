@@ -37,6 +37,11 @@ const displayQuestions = computed(() => {
   return list
 })
 
+/** 统计明细 */
+const requiredCount = computed(() => questions.value.filter((q) => q.category === 'required').length)
+const quickAnswerCount = computed(() => questions.value.filter((q) => q.category === 'quick-answer').length)
+const riskCount = computed(() => questions.value.filter((q) => q.category === 'risk').length)
+
 async function fetchQuestions() {
   loading.value = true
   try {
@@ -221,10 +226,10 @@ function categoryTagType(cat: string) {
 }
 
 // ---------- 表格高度 ----------
-const tableMaxHeight = ref(window.innerHeight - 140)
+const tableMaxHeight = ref(window.innerHeight - 205)
 
 function onResize() {
-  tableMaxHeight.value = window.innerHeight - 140
+  tableMaxHeight.value = window.innerHeight - 205
 }
 
 async function copyId(id: string) {
@@ -293,6 +298,29 @@ onUnmounted(() => {
         <el-button type="success" :icon="Download" @click="exportToExcel">导出题库</el-button>
         <el-button type="danger" :icon="Delete" @click="onDeleteAll">删除全部</el-button>
       </div>
+    </div>
+
+    <!-- 数量统计 -->
+    <div class="summary-bar">
+      <span class="summary-item">
+        <span class="summary-num">{{ questions.length }}</span>
+        <span class="summary-label">总计</span>
+      </span>
+      <el-divider direction="vertical" />
+      <span class="summary-item summary-item--required">
+        <span class="summary-num">{{ requiredCount }}</span>
+        <span class="summary-label">必答题</span>
+      </span>
+      <el-divider direction="vertical" />
+      <span class="summary-item summary-item--quick">
+        <span class="summary-num">{{ quickAnswerCount }}</span>
+        <span class="summary-label">抢答题</span>
+      </span>
+      <el-divider direction="vertical" />
+      <span class="summary-item summary-item--risk">
+        <span class="summary-num">{{ riskCount }}</span>
+        <span class="summary-label">风险题</span>
+      </span>
     </div>
 
     <!-- 题目表格 -->
@@ -432,6 +460,51 @@ onUnmounted(() => {
 .control-actions {
   display: flex;
   gap: 12px;
+}
+
+.summary-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 16px;
+  margin-bottom: 12px;
+  background: #f5f7fa;
+  border-radius: 6px;
+}
+
+.summary-item {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 0 8px;
+}
+
+.summary-num {
+  font-size: 20px;
+  font-weight: 700;
+  color: #303133;
+}
+
+.summary-label {
+  font-size: 13px;
+  color: #909399;
+}
+
+.summary-item--required .summary-num {
+  color: #409eff;
+}
+
+.summary-item--quick .summary-num {
+  color: #e6a23c;
+}
+
+.summary-item--risk .summary-num {
+  color: #f56c6c;
+}
+
+.el-divider--vertical {
+  height: 20px;
+  margin: 0 4px;
 }
 
 .id-cell {

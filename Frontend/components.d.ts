@@ -11,12 +11,17 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    CurrentQuestion: typeof import('./src/components/adminView/dashboard/CurrentQuestion.vue')['default']
+    DashboardPanel: typeof import('./src/components/adminView/DashboardPanel.vue')['default']
+    DashboardView: typeof import('./src/components/adminView/DashboardView.vue')['default']
     ElAside: typeof import('element-plus/es')['ElAside']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElCard: typeof import('element-plus/es')['ElCard']
     ElCol: typeof import('element-plus/es')['ElCol']
     ElContainer: typeof import('element-plus/es')['ElContainer']
     ElDialog: typeof import('element-plus/es')['ElDialog']
+    ElDivider: typeof import('element-plus/es')['ElDivider']
+    ElEmpty: typeof import('element-plus/es')['ElEmpty']
     ElForm: typeof import('element-plus/es')['ElForm']
     ElFormItem: typeof import('element-plus/es')['ElFormItem']
     ElIcon: typeof import('element-plus/es')['ElIcon']
@@ -39,11 +44,14 @@ declare module 'vue' {
     ElTag: typeof import('element-plus/es')['ElTag']
     LoginCard: typeof import('./src/components/loginView/loginCard.vue')['default']
     LoginForm: typeof import('./src/components/loginView/LoginForm.vue')['default']
+    PlayerList: typeof import('./src/components/adminView/dashboard/PlayerList.vue')['default']
+    QuestionList: typeof import('./src/components/adminView/dashboard/QuestionList.vue')['default']
     QuestionManagement: typeof import('./src/components/adminView/QuestionManagement.vue')['default']
     RegisterCard: typeof import('./src/components/loginView/registerCard.vue')['default']
     RegisterForm: typeof import('./src/components/loginView/RegisterForm.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    StatusControls: typeof import('./src/components/adminView/dashboard/StatusControls.vue')['default']
     UserManagement: typeof import('./src/components/adminView/UserManagement.vue')['default']
   }
   export interface GlobalDirectives {

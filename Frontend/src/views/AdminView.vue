@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { Monitor, User, Document, Fold, Expand } from '@element-plus/icons-vue'
 import UserManagement from '@/components/adminView/UserManagement.vue'
 import QuestionManagement from '@/components/adminView/QuestionManagement.vue'
+import DashboardPanel from '@/components/adminView/DashboardPanel.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -51,9 +52,7 @@ watch(activeMenu, (val) => {
     </el-aside>
 
     <el-main>
-      <div v-if="activeMenu === 'dashboard'" class="page-placeholder">
-        <h2>控制台</h2>
-      </div>
+      <DashboardPanel v-if="activeMenu === 'dashboard'" />
       <UserManagement v-else-if="activeMenu === 'users'" />
       <QuestionManagement v-else-if="activeMenu === 'questions'" />
     </el-main>
@@ -102,8 +101,4 @@ watch(activeMenu, (val) => {
   padding: 24px;
 }
 
-.page-placeholder h2 {
-  color: #303133;
-  font-weight: 500;
-}
 </style>

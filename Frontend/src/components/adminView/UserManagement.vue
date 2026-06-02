@@ -32,6 +32,10 @@ const displayUsers = computed(() => {
   return list
 })
 
+/** 统计明细 */
+const playerCount = computed(() => users.value.filter((u) => u.role === 'player').length)
+const adminCount = computed(() => users.value.filter((u) => u.role === 'admin').length)
+
 function togglePassword(id: string) {
   if (visiblePasswords.has(id)) {
     visiblePasswords.delete(id)
@@ -192,10 +196,10 @@ async function onDeleteAll() {
 }
 
 // ---------- 表格高度 ----------
-const tableMaxHeight = ref(window.innerHeight - 140)
+const tableMaxHeight = ref(window.innerHeight - 205)
 
 function onResize() {
-  tableMaxHeight.value = window.innerHeight - 140
+  tableMaxHeight.value = window.innerHeight - 205
 }
 
 // ---------- 导出 Excel ----------
@@ -323,6 +327,24 @@ async function onDeleteScore(scoreId: string, score: number) {
         <el-button type="success" :icon="Download" @click="exportToExcel">导出Excel</el-button>
         <el-button type="danger" :icon="Delete" @click="onDeleteAll">删除全部用户</el-button>
       </div>
+    </div>
+
+    <!-- 数量统计 -->
+    <div class="summary-bar">
+      <span class="summary-item">
+        <span class="summary-num">{{ users.length }}</span>
+        <span class="summary-label">总计</span>
+      </span>
+      <el-divider direction="vertical" />
+      <span class="summary-item summary-item--player">
+        <span class="summary-num">{{ playerCount }}</span>
+        <span class="summary-label">选手</span>
+      </span>
+      <el-divider direction="vertical" />
+      <span class="summary-item summary-item--admin">
+        <span class="summary-num">{{ adminCount }}</span>
+        <span class="summary-label">管理员</span>
+      </span>
     </div>
 
     <!-- 用户表格 -->
@@ -482,6 +504,47 @@ async function onDeleteScore(scoreId: string, score: number) {
 .control-actions {
   display: flex;
   gap: 12px;
+}
+
+.summary-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 16px;
+  margin-bottom: 12px;
+  background: #f5f7fa;
+  border-radius: 6px;
+}
+
+.summary-item {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 0 8px;
+}
+
+.summary-num {
+  font-size: 20px;
+  font-weight: 700;
+  color: #303133;
+}
+
+.summary-label {
+  font-size: 13px;
+  color: #909399;
+}
+
+.summary-item--player .summary-num {
+  color: #67c23a;
+}
+
+.summary-item--admin .summary-num {
+  color: #f56c6c;
+}
+
+.el-divider--vertical {
+  height: 20px;
+  margin: 0 4px;
 }
 
 .password-cell,

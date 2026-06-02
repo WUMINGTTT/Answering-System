@@ -114,6 +114,7 @@ function categoryTagType(cat: string) {
   flex: 1;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .current-card :deep(.el-card__header) {
@@ -125,6 +126,7 @@ function categoryTagType(cat: string) {
 .current-card :deep(.el-card__body) {
   padding: 0;
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: #c4c4c4 transparent;

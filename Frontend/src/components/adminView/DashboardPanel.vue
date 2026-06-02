@@ -30,19 +30,31 @@ import QuestionList from './dashboard/QuestionList.vue'
   display: flex;
   flex-direction: column;
   gap: 20px;
+  height: 100%;
 }
 
 .list-row {
   flex: 1;
+  min-height: 0;
 }
 
 .list-row :deep(.el-col) {
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  height: 100%;
 }
 
 /* 小屏堆叠 */
 @media (max-width: 992px) {
+  .list-row {
+    min-height: auto;
+  }
+
+  .list-row :deep(.el-col) {
+    overflow: visible;
+  }
+
   .list-row .el-col {
     flex: 0 0 100%;
     max-width: 100%;

@@ -258,15 +258,22 @@ onMounted(() => {
 .list-card {
   border-radius: 8px;
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .list-card :deep(.el-card__header) {
   padding: 14px 18px;
   border-bottom: 1px solid #ebeef5;
+  flex-shrink: 0;
 }
 
 .list-card :deep(.el-card__body) {
   padding: 0;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .card-header {
@@ -294,7 +301,7 @@ onMounted(() => {
 
 /* 列表项 */
 .list-body {
-  max-height: 420px;
+  height: 100%;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: #c4c4c4 transparent;

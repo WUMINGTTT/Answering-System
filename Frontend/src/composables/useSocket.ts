@@ -2,6 +2,13 @@ import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { io, Socket } from 'socket.io-client'
 import type { Question } from '@/types/question'
 
+/** 排名条目 */
+export interface PlayerRanking {
+  rank: number
+  nickname: string
+  totalScore: number
+}
+
 /** 与服务端同步的游戏状态 */
 export interface SyncedGameState {
   status: string
@@ -14,6 +21,7 @@ export interface SyncedGameState {
   quickAnswerEndTime: number | null
   isAnswerCounting: boolean
   isQuickAnswerCounting: boolean
+  rankings: PlayerRanking[]
 }
 
 interface UseSocketOptions {

@@ -10,15 +10,24 @@ import type { ScoreDetail } from '@/types/score'
 const users = ref<User[]>([])
 const usersLoading = ref(false)
 const userSearch = ref('')
+const sortByScore = ref(false)
 
 const displayUsers = computed(() => {
   const kw = userSearch.value.trim().toLowerCase()
-  if (!kw) return users.value.filter((u) => u.role === 'player')
-  return users.value.filter(
-    (u) =>
-      u.role === 'player' &&
-      (u.nickname.toLowerCase().includes(kw) || u.username.toLowerCase().includes(kw)),
-  )
+  let list: User[]
+  if (!kw) {
+    list = users.value.filter((u) => u.role === 'player')
+  } else {
+    list = users.value.filter(
+      (u) =>
+        u.role === 'player' &&
+        (u.nickname.toLowerCase().includes(kw) || u.username.toLowerCase().includes(kw)),
+    )
+  }
+  if (sortByScore.value) {
+    list = [...list].sort((a, b) => b.totalScore - a.totalScore)
+  }
+  return list
 })
 
 async function fetchUsers() {
@@ -140,14 +149,23 @@ onMounted(() => {
           <span>选手列表</span>
           <span class="card-count">{{ displayUsers.length }} 人</span>
         </div>
-        <el-input
-          v-model="userSearch"
-          :prefix-icon="Search"
-          placeholder="搜索选手"
-          clearable
-          size="small"
-          style="width: 180px"
-        />
+        <div class="card-header-right">
+          <!-- 按分数排序开关 -->
+          <el-switch
+            v-model="sortByScore"
+            size="small"
+            active-text="按分数排序"
+            inactive-text="默认顺序"
+          />
+          <el-input
+            v-model="userSearch"
+            :prefix-icon="Search"
+            placeholder="搜索选手"
+            clearable
+            size="small"
+            style="width: 180px"
+          />
+        </div>
       </div>
     </template>
 
@@ -282,6 +300,12 @@ onMounted(() => {
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+.card-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .card-title {

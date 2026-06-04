@@ -3,6 +3,13 @@ import type { Question } from '../types/question.js';
 /** 游戏阶段 */
 export type GameStatus = 'waiting' | 'required' | 'quick-answer' | 'risk' | 'ranking';
 
+/** 排名条目 */
+export interface PlayerRanking {
+  rank: number;
+  nickname: string;
+  totalScore: number;
+}
+
 /** 存储在服务端、跨页面同步的游戏状态 */
 export interface GameState {
   status: GameStatus;
@@ -15,6 +22,7 @@ export interface GameState {
   quickAnswerEndTime: number | null;
   isAnswerCounting: boolean;
   isQuickAnswerCounting: boolean;
+  rankings: PlayerRanking[];
 }
 
 /** 默认游戏状态 */
@@ -30,6 +38,7 @@ function createDefaultState(): GameState {
     quickAnswerEndTime: null,
     isAnswerCounting: false,
     isQuickAnswerCounting: false,
+    rankings: [],
   };
 }
 

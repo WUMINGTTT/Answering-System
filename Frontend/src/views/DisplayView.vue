@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
-import { useSocket, type SyncedGameState } from '@/composables/useSocket'
+import { useSocket, type SyncedGameState, type PlayerRanking } from '@/composables/useSocket'
 import { useDisplayCountdown } from '@/composables/useDisplayCountdown'
 import type { Question } from '@/types/question'
 import CountdownTimers from '@/components/displayView/CountdownTimers.vue'
 import QuestionCard from '@/components/displayView/QuestionCard.vue'
 import AnswerReveal from '@/components/displayView/AnswerReveal.vue'
+import DisplayRanking from '@/components/displayView/DisplayRanking.vue'
 
 // ── Socket 同步 ──
 const { connected, serverState } = useSocket({ syncRemote: true })
@@ -28,6 +29,7 @@ const currentQuestion = ref<Question | null>(null)
 const currentRiskCode = ref<string | null>(null)
 const showAnswer = ref(false)
 const phase = ref('')
+const rankings = ref<PlayerRanking[]>([])
 
 // ── 远端 → 本地 ──
 watch(serverState, (s: SyncedGameState | null) => {
@@ -36,6 +38,7 @@ watch(serverState, (s: SyncedGameState | null) => {
   currentRiskCode.value = s.currentRiskCode
   showAnswer.value = s.showAnswer
   phase.value = s.status
+  rankings.value = s.rankings || []
   syncFromServer(s)
 })
 
@@ -87,7 +90,13 @@ const typeLabel = computed(() => {
 
       <!-- 中间主体 -->
       <div class="main-area">
-        <template v-if="currentQuestion">
+        <!-- 排名展示 -->
+        <template v-if="phase === 'ranking'">
+          <DisplayRanking :rankings="rankings" />
+        </template>
+
+        <!-- 答题展示 -->
+        <template v-else-if="currentQuestion">
           <!-- 倒计时（仅管理员启动后展示） -->
           <CountdownTimers
             :show-quick-answer="showQuickAnswerTimer"
@@ -115,7 +124,6 @@ const typeLabel = computed(() => {
 
         <!-- 等待中 -->
         <div v-else class="waiting-state">
-          <!-- <div class="waiting-icon">📋</div> -->
           <div class="waiting-text">等待管理员选题...</div>
           <div class="waiting-sub">题目将在此处展示</div>
         </div>

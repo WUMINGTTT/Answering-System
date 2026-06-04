@@ -16,6 +16,7 @@ declare module 'vue' {
     CountdownTimers: typeof import('./src/components/displayView/CountdownTimers.vue')['default']
     CurrentQuestion: typeof import('./src/components/adminView/dashboard/CurrentQuestion.vue')['default']
     DashboardPanel: typeof import('./src/components/adminView/DashboardPanel.vue')['default']
+    DisplayRanking: typeof import('./src/components/displayView/DisplayRanking.vue')['default']
     ElAside: typeof import('element-plus/es')['ElAside']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElCard: typeof import('element-plus/es')['ElCard']

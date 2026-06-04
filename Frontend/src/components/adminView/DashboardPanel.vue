@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { watch, computed, nextTick } from 'vue'
+import { ref, watch, computed, nextTick } from 'vue'
 import StatusControls from './dashboard/StatusControls.vue'
 import CurrentQuestion from './dashboard/CurrentQuestion.vue'
 import PlayerList from './dashboard/PlayerList.vue'
 import QuestionList from './dashboard/QuestionList.vue'
-import { useSocket } from '@/composables/useSocket'
+import { useSocket, type PlayerRanking } from '@/composables/useSocket'
 import { useGameStatusStore } from '@/stores/gameStatus'
 import { useCountdownStore } from '@/stores/countdown'
+import { getAllUsers } from '@/api/users'
 
 const gameStore = useGameStatusStore()
 const countdownStore = useCountdownStore()
@@ -41,6 +42,8 @@ watch(serverState, (s) => {
     countdownStore.quickAnswerRemaining = Math.max(0, Math.ceil((s.quickAnswerEndTime - Date.now()) / 1000))
   }
 
+  if (s.rankings) rankings.value = s.rankings
+
   nextTick(() => { syncingRemote = false })
 })
 
@@ -53,11 +56,36 @@ watch(() => gameStore.status, () => {
 // ── 切换题目时自动停止倒计时（远程同步时跳过） ──
 watch(() => gameStore.currentQuestion, () => {
   if (syncingRemote) return
-  // 仅在倒计时运行时才需要停止
   if (countdownStore.isAnswerCounting || countdownStore.isQuickAnswerCounting) {
     countdownStore.resetAll()
     ElMessage.info('已切换题目，倒计时已自动停止')
   }
+})
+
+// ── 排名数据 ──
+const rankings = ref<PlayerRanking[]>([])
+
+/** 从 API 拉取选手列表并计算排名 */
+async function fetchRankings() {
+  try {
+    const { data: res } = await getAllUsers()
+    const players = res.data
+      .filter((u) => u.role === 'player')
+      .sort((a, b) => b.totalScore - a.totalScore)
+    rankings.value = players.map((p, i) => ({
+      rank: i + 1,
+      nickname: p.nickname,
+      totalScore: p.totalScore,
+    }))
+  } catch {
+    ElMessage.error('获取排名数据失败')
+  }
+}
+
+// 进入排名阶段时拉取最新排名
+watch(() => gameStore.status, (s) => {
+  if (syncingRemote) return
+  if (s === 'ranking') fetchRankings()
 })
 
 // ── 本地 → 远端：管理员操作时推送关键状态变更 ──
@@ -73,6 +101,7 @@ const syncPayload = computed(() => ({
   quickAnswerEndTime: countdownStore.quickAnswerEndTime,
   isAnswerCounting: countdownStore.isAnswerCounting,
   isQuickAnswerCounting: countdownStore.isQuickAnswerCounting,
+  rankings: rankings.value,
 }))
 
 watch(syncPayload, (val) => {

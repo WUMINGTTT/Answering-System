@@ -50,6 +50,16 @@ watch(() => gameStore.status, () => {
   countdownStore.resetAll()
 })
 
+// ── 切换题目时自动停止倒计时（远程同步时跳过） ──
+watch(() => gameStore.currentQuestion, () => {
+  if (syncingRemote) return
+  // 仅在倒计时运行时才需要停止
+  if (countdownStore.isAnswerCounting || countdownStore.isQuickAnswerCounting) {
+    countdownStore.resetAll()
+    ElMessage.info('已切换题目，倒计时已自动停止')
+  }
+})
+
 // ── 本地 → 远端：管理员操作时推送关键状态变更 ──
 /** 提取需同步的最小状态集（不含高频变化的 remaining） */
 const syncPayload = computed(() => ({
@@ -74,7 +84,7 @@ watch(syncPayload, (val) => {
 <template>
   <div class="dashboard">
     <!-- 状态控制 -->
-    <StatusControls />
+    <StatusControls :connected="connected" />
 
     <!-- 当前题目 | 选手列表 | 题目列表 -->
     <el-row :gutter="16" class="list-row">

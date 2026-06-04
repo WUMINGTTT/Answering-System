@@ -14,6 +14,10 @@ import {
 } from '@/stores/gameStatus'
 import CountdownPanel from './CountdownPanel.vue'
 
+defineProps<{
+  connected?: boolean
+}>()
+
 const store = useGameStatusStore()
 
 type StatusOption = { label: string; value: GameStatus; icon: typeof VideoPause }
@@ -43,6 +47,10 @@ const QUESTION_STATUS_OPTIONS: StatusOption[] = [
           <el-tag :color="store.statusColor" size="large" effect="dark" class="status-tag">
             {{ store.statusLabel }}
           </el-tag>
+          <!-- 服务器连接状态指示 -->
+          <el-tooltip :content="connected ? '服务器已连接' : '服务器断开，正在重连...'" placement="bottom">
+            <span class="conn-dot" :class="{ 'conn-dot--ok': connected }" />
+          </el-tooltip>
         </div>
 
         <!-- 倒计时（必答题 / 抢答题时展示） -->
@@ -127,6 +135,20 @@ const QUESTION_STATUS_OPTIONS: StatusOption[] = [
   font-size: 15px;
   padding: 6px 20px;
   border-radius: 6px;
+}
+
+.conn-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #f56c6c;
+  flex-shrink: 0;
+  transition: background 0.3s;
+  cursor: default;
+}
+
+.conn-dot--ok {
+  background: #67c23a;
 }
 
 .status-actions {

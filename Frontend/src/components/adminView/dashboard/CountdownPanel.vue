@@ -7,6 +7,37 @@ import { useGameStatusStore } from '@/stores/gameStatus'
 const gameStore = useGameStatusStore()
 const countdownStore = useCountdownStore()
 
+// ── 限制校验 ──
+
+/** 检查是否已选择题目，未选则提示并返回 false */
+function ensureQuestionSelected(): boolean {
+  if (!gameStore.currentQuestion) {
+    ElMessage.warning('请先选择一道题目')
+    return false
+  }
+  return true
+}
+
+/** 开始答题倒计时（含限制：须已选题、不可与抢答倒计时同时） */
+function handleStartAnswer() {
+  if (!ensureQuestionSelected()) return
+  if (countdownStore.isQuickAnswerCounting) {
+    countdownStore.stopQuickAnswerCountdown()
+    ElMessage.info('已自动停止抢答倒计时')
+  }
+  countdownStore.startAnswerCountdown()
+}
+
+/** 开始抢答倒计时（含限制：须已选题、不可与答题倒计时同时） */
+function handleStartQuickAnswer() {
+  if (!ensureQuestionSelected()) return
+  if (countdownStore.isAnswerCounting) {
+    countdownStore.stopAnswerCountdown()
+    ElMessage.info('已自动停止答题倒计时')
+  }
+  countdownStore.startQuickAnswerCountdown()
+}
+
 // ---------- 定时器 ----------
 let timerHandle: ReturnType<typeof setInterval> | null = null
 
@@ -49,7 +80,7 @@ onUnmounted(() => stopTicking())
         <el-button
           v-if="!countdownStore.isAnswerCounting"
           type="primary" size="small" :icon="VideoPlay"
-          @click="countdownStore.startAnswerCountdown()"
+          @click="handleStartAnswer()"
         />
         <el-button
           v-else
@@ -59,7 +90,7 @@ onUnmounted(() => stopTicking())
         <el-button
           size="small" :icon="RefreshRight"
           :disabled="!countdownStore.isAnswerCounting && countdownStore.answerRemaining <= 0"
-          @click="countdownStore.startAnswerCountdown()"
+          @click="handleStartAnswer()"
         />
         <span
           class="timer-value"
@@ -84,7 +115,7 @@ onUnmounted(() => stopTicking())
         <el-button
           v-if="!countdownStore.isQuickAnswerCounting"
           type="primary" size="small" :icon="VideoPlay"
-          @click="countdownStore.startQuickAnswerCountdown()"
+          @click="handleStartQuickAnswer()"
         />
         <el-button
           v-else
@@ -94,7 +125,7 @@ onUnmounted(() => stopTicking())
         <el-button
           size="small" :icon="RefreshRight"
           :disabled="!countdownStore.isQuickAnswerCounting && countdownStore.quickAnswerRemaining <= 0"
-          @click="countdownStore.startQuickAnswerCountdown()"
+          @click="handleStartQuickAnswer()"
         />
         <span
           class="timer-value"
@@ -115,7 +146,7 @@ onUnmounted(() => stopTicking())
         <el-button
           v-if="!countdownStore.isAnswerCounting"
           type="primary" size="small" :icon="VideoPlay"
-          @click="countdownStore.startAnswerCountdown()"
+          @click="handleStartAnswer()"
         />
         <el-button
           v-else
@@ -125,7 +156,7 @@ onUnmounted(() => stopTicking())
         <el-button
           size="small" :icon="RefreshRight"
           :disabled="!countdownStore.isAnswerCounting && countdownStore.answerRemaining <= 0"
-          @click="countdownStore.startAnswerCountdown()"
+          @click="handleStartAnswer()"
         />
         <span
           class="timer-value"

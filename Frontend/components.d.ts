@@ -11,7 +11,9 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AnswerReveal: typeof import('./src/components/displayView/AnswerReveal.vue')['default']
     CountdownPanel: typeof import('./src/components/adminView/dashboard/CountdownPanel.vue')['default']
+    CountdownTimers: typeof import('./src/components/displayView/CountdownTimers.vue')['default']
     CurrentQuestion: typeof import('./src/components/adminView/dashboard/CurrentQuestion.vue')['default']
     DashboardPanel: typeof import('./src/components/adminView/DashboardPanel.vue')['default']
     ElAside: typeof import('element-plus/es')['ElAside']
@@ -44,6 +46,7 @@ declare module 'vue' {
     ElTooltip: typeof import('element-plus/es')['ElTooltip']
     LoginForm: typeof import('./src/components/loginView/LoginForm.vue')['default']
     PlayerList: typeof import('./src/components/adminView/dashboard/PlayerList.vue')['default']
+    QuestionCard: typeof import('./src/components/displayView/QuestionCard.vue')['default']
     QuestionList: typeof import('./src/components/adminView/dashboard/QuestionList.vue')['default']
     QuestionManagement: typeof import('./src/components/adminView/QuestionManagement.vue')['default']
     RegisterForm: typeof import('./src/components/loginView/RegisterForm.vue')['default']

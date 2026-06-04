@@ -25,8 +25,6 @@ watch(
   { immediate: true },
 )
 
-watch(() => gameStore.status, () => countdownStore.resetAll())
-
 onUnmounted(() => stopTicking())
 </script>
 

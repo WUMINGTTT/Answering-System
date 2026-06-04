@@ -1,8 +1,13 @@
 <script setup lang="ts">
-import { QuestionFilled } from '@element-plus/icons-vue'
+import { QuestionFilled, Close } from '@element-plus/icons-vue'
 import { useGameStatusStore } from '@/stores/gameStatus'
 
 const store = useGameStatusStore()
+
+function clearQuestion() {
+  store.setCurrentQuestion(null)
+  ElMessage.info('已取消当前展示题目')
+}
 
 // ---------- 标签辅助 ----------
 function typeLabel(type: string) {
@@ -48,6 +53,16 @@ function categoryTagType(cat: string) {
       <div class="card-header">
         <el-icon :size="18"><QuestionFilled /></el-icon>
         <span>当前题目</span>
+        <el-button
+          v-if="store.currentQuestion"
+          :icon="Close"
+          size="small"
+          text
+          class="clear-btn"
+          @click="clearQuestion"
+        >
+          取消选择
+        </el-button>
       </div>
     </template>
 
@@ -63,6 +78,8 @@ function categoryTagType(cat: string) {
         <el-tag :type="categoryTagType(store.currentQuestion.category)" size="small">
           {{ categoryLabel(store.currentQuestion.category) }}
         </el-tag>
+        <!-- 风险题额外显示代号 -->
+        <span v-if="store.currentRiskCode" class="qd-risk-code">{{ store.currentRiskCode }}</span>
         <span class="qd-score">{{ store.currentQuestion.score }} 分</span>
       </div>
 
@@ -84,7 +101,16 @@ function categoryTagType(cat: string) {
 
       <!-- 答案 -->
       <div v-if="store.currentQuestion.answers.length" class="qd-answers">
-        <div class="qd-section-label">答案</div>
+        <div class="qd-answers-header">
+          <span class="qd-section-label">答案</span>
+          <el-switch
+            :model-value="store.showAnswer"
+            size="small"
+            active-text="公布答案"
+            inactive-text=""
+            @change="store.setShowAnswer"
+          />
+        </div>
         <div class="qd-answer-list">
           <el-tag
             v-for="(ans, i) in store.currentQuestion.answers"
@@ -158,6 +184,17 @@ function categoryTagType(cat: string) {
   color: var(--text-primary);
 }
 
+.clear-btn {
+  margin-left: auto;
+  color: var(--text-secondary);
+  font-weight: 400;
+  font-size: 13px;
+}
+
+.clear-btn:hover {
+  color: #f56c6c;
+}
+
 /* 题目详情 */
 .question-detail {
   padding: 16px 18px;
@@ -184,6 +221,14 @@ function categoryTagType(cat: string) {
   color: var(--color-primary);
   font-weight: 600;
   margin-left: auto;
+}
+
+.qd-risk-code {
+  font-size: 16px;
+  color: #f56c6c;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  letter-spacing: 1px;
 }
 
 /* 选项 & 答案 */
@@ -223,6 +268,18 @@ function categoryTagType(cat: string) {
 .qd-answers {
   border-top: 1px dashed var(--border-base);
   margin-top: 10px;
+}
+
+.qd-answers-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  margin-bottom: 6px;
+}
+
+.qd-answers-header .qd-section-label {
+  margin: 0;
 }
 
 .qd-answer-list {

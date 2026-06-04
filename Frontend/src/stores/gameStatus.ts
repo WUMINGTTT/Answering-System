@@ -26,6 +26,10 @@ export const STATUS_COLORS: Record<GameStatus, string> = {
 export const useGameStatusStore = defineStore('gameStatus', () => {
   const status = ref<GameStatus>('waiting')
   const currentQuestion = ref<Question | null>(null)
+  /** 当前风险题代号（如 A5、C13），非风险题为 null */
+  const currentRiskCode = ref<string | null>(null)
+  /** 展示页是否展示答案（管理员控制，切换题目时自动隐藏） */
+  const showAnswer = ref(false)
 
   const statusLabel = computed(() => STATUS_LABELS[status.value])
   const statusColor = computed(() => STATUS_COLORS[status.value])
@@ -37,17 +41,27 @@ export const useGameStatusStore = defineStore('gameStatus', () => {
     currentQuestion.value = null
   }
 
-  function setCurrentQuestion(q: Question | null) {
+  function setCurrentQuestion(q: Question | null, riskCode?: string) {
     currentQuestion.value = q
+    currentRiskCode.value = riskCode || null
+    // 切换题目时重置答案显隐
+    showAnswer.value = false
+  }
+
+  function setShowAnswer(v: boolean) {
+    showAnswer.value = v
   }
 
   return {
     status,
     currentQuestion,
+    currentRiskCode,
+    showAnswer,
     statusLabel,
     statusColor,
     isActive,
     setStatus,
     setCurrentQuestion,
+    setShowAnswer,
   }
 })

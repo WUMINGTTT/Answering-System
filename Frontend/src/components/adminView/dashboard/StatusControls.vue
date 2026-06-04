@@ -12,6 +12,7 @@ import {
   QUESTION_PHASES,
   type GameStatus,
 } from '@/stores/gameStatus'
+import CountdownPanel from './CountdownPanel.vue'
 
 const store = useGameStatusStore()
 
@@ -35,7 +36,7 @@ const QUESTION_STATUS_OPTIONS: StatusOption[] = [
 <template>
   <el-card class="status-card" shadow="hover">
     <div class="status-layout">
-      <!-- 左侧：当前状态信息 -->
+      <!-- 左侧：当前状态信息 + 倒计时控制 -->
       <div class="status-info">
         <div class="status-header">
           <span class="status-label">当前状态</span>
@@ -44,6 +45,8 @@ const QUESTION_STATUS_OPTIONS: StatusOption[] = [
           </el-tag>
         </div>
 
+        <!-- 倒计时（必答题 / 抢答题时展示） -->
+        <CountdownPanel />
       </div>
 
       <!-- 右侧：状态切换按钮 -->
@@ -111,7 +114,7 @@ const QUESTION_STATUS_OPTIONS: StatusOption[] = [
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 
 .status-label {

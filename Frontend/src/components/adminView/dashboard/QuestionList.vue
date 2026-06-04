@@ -11,6 +11,29 @@ const store = useGameStatusStore()
 const questions = ref<Question[]>([])
 const questionsLoading = ref(false)
 const questionSearch = ref('')
+/** 风险题阶段分值筛选（0 = 全部） */
+const riskScoreFilter = ref<number>(0)
+
+/** 风险题可选分值 */
+const RISK_SCORES = [10, 20, 30]
+
+/** 风险题分值 → 字母代号 */
+const SCORE_LETTER: Record<number, string> = { 10: 'A', 20: 'B', 30: 'C' }
+
+/** 风险题 ID → 代号（如 A5、C13），按全量风险题列表的顺序编号 */
+const riskCodeMap = computed(() => {
+  const map = new Map<string, string>()
+  const riskQuestions = questions.value.filter((q) => q.category === 'risk')
+  // 按分值分组，组内按原始顺序编号
+  const counters: Record<number, number> = {}
+  for (const q of riskQuestions) {
+    if (!counters[q.score]) counters[q.score] = 0
+    counters[q.score]++
+    const letter = SCORE_LETTER[q.score] || '?'
+    map.set(q.id, `${letter}${counters[q.score]}`)
+  }
+  return map
+})
 
 /** 根据当前状态自动筛选题目：仅在答题阶段过滤对应类别的题目 */
 const displayQuestions = computed(() => {
@@ -19,6 +42,11 @@ const displayQuestions = computed(() => {
   // 仅当状态为答题阶段（必答题/抢答题/风险题）时按类别过滤
   if ((QUESTION_PHASES as readonly string[]).includes(store.status)) {
     list = list.filter((q) => q.category === store.status)
+  }
+
+  // 风险题阶段按分值筛选
+  if (store.status === 'risk' && riskScoreFilter.value !== 0) {
+    list = list.filter((q) => q.score === riskScoreFilter.value)
   }
 
   const kw = questionSearch.value.trim().toLowerCase()
@@ -55,8 +83,10 @@ function toggleCurrentQuestion(q: Question) {
     store.setCurrentQuestion(null)
     ElMessage.info('已取消当前展示题目')
   } else {
-    store.setCurrentQuestion(q)
-    ElMessage.success(`已将「${q.stem.slice(0, 20)}...」设为当前展示题目`)
+    const rCode = riskCodeMap.value.get(q.id)
+    store.setCurrentQuestion(q, rCode)
+    const label = rCode ? `「${rCode}」` : `「${q.stem.slice(0, 20)}...」`
+    ElMessage.success(`已将 ${label} 设为当前展示题目`)
   }
 }
 
@@ -119,14 +149,30 @@ onMounted(() => {
           </el-tag>
           <span class="card-count">{{ displayQuestions.length }} 题</span>
         </div>
-        <el-input
-          v-model="questionSearch"
-          :prefix-icon="Search"
-          placeholder="搜索题目"
-          clearable
-          size="small"
-          style="width: 180px"
-        />
+        <div class="card-header-right">
+          <!-- 风险题分值筛选 -->
+          <el-radio-group
+            v-if="store.status === 'risk'"
+            v-model="riskScoreFilter"
+            size="small"
+            class="score-filter"
+          >
+            <el-radio-button :value="0">全部</el-radio-button>
+            <el-radio-button
+              v-for="s in RISK_SCORES"
+              :key="s"
+              :value="s"
+            >{{ s }} 分</el-radio-button>
+          </el-radio-group>
+          <el-input
+            v-model="questionSearch"
+            :prefix-icon="Search"
+            placeholder="搜索题目"
+            clearable
+            size="small"
+            style="width: 180px"
+          />
+        </div>
       </div>
     </template>
 
@@ -160,6 +206,8 @@ onMounted(() => {
             <el-tag v-if="isCurrentQuestion(q)" type="primary" size="small" effect="dark">
               当前
             </el-tag>
+            <!-- 风险题额外显示代号 -->
+            <span v-if="q.category === 'risk'" class="item-code">{{ riskCodeMap.get(q.id) }}</span>
             <span class="item-score">{{ q.score }} 分</span>
           </div>
         </div>
@@ -197,6 +245,16 @@ onMounted(() => {
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+.card-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.score-filter {
+  flex-shrink: 0;
 }
 
 .card-title {
@@ -314,5 +372,13 @@ onMounted(() => {
   font-size: 14px;
   color: var(--color-primary);
   font-weight: 600;
+}
+
+.item-code {
+  font-size: 15px;
+  color: #f56c6c;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  letter-spacing: 0.5px;
 }
 </style>

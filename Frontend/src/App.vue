@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
-import ThemeToggle from '@/components/ThemeToggle.vue'
 </script>
 
 <template>
   <RouterView />
-  <ThemeToggle />
 </template>
 
 <!-- 全局主题样式（非 scoped） -->
@@ -27,23 +25,6 @@ import ThemeToggle from '@/components/ThemeToggle.vue'
   --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.04);
 }
 
-/* ========== 深色 ========== */
-:root.dark {
-  --bg-page: #14141a;
-  --bg-card: #1e1e28;
-  --bg-sidebar: #1a1a24;
-  --bg-hover: #2a2a36;
-  --bg-active: rgba(64, 158, 255, 0.12);
-  --border-base: #2e2e3a;
-  --border-light: #262632;
-  --text-primary: #e4e4ec;
-  --text-regular: #b0b0be;
-  --text-secondary: #787882;
-  --text-placeholder: #565662;
-  --color-primary: #60a5fa;
-  --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.3);
-}
-
 /* 主题切换时禁用过渡，避免组件颜色不同步 */
 html.no-transition,
 html.no-transition *,
@@ -51,11 +32,6 @@ html.no-transition *::before,
 html.no-transition *::after {
   transition: none !important;
   animation: none !important;
-}
-
-/* 全局过渡 */
-html.dark {
-  color-scheme: dark;
 }
 
 body {

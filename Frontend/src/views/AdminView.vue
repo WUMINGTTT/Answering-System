@@ -5,9 +5,12 @@ import { Monitor, User, Document, Fold, Expand } from '@element-plus/icons-vue'
 import UserManagement from '@/components/adminView/UserManagement.vue'
 import QuestionManagement from '@/components/adminView/QuestionManagement.vue'
 import DashboardPanel from '@/components/adminView/DashboardPanel.vue'
+import ThemeToggle from '@/components/ThemeToggle.vue'
+import { useThemeStore } from '@/stores/theme'
 
 const route = useRoute()
 const router = useRouter()
+const theme = useThemeStore()
 
 const activeMenu = ref((route.query.tab as string) || 'dashboard')
 const isCollapse = ref(false)
@@ -19,10 +22,17 @@ function toggleCollapse() {
 watch(activeMenu, (val) => {
   router.replace({ query: { tab: val } })
 })
+
+// ========== 深色模式：仅在管理页生效 ==========
+// 路由守卫负责进入/离开时同步 html.dark
+// 此处监听切换操作，确保在管理页内切换时实时同步
+watch(() => theme.isDark, (val) => {
+  document.documentElement.classList.toggle('dark', val)
+})
 </script>
 
 <template>
-  <el-container class="admin-container">
+  <el-container class="admin-container" :class="{ dark: theme.isDark }">
     <el-aside :width="isCollapse ? '64px' : '220px'">
       <div class="logo">
         <span v-if="!isCollapse">后台管理</span>
@@ -49,7 +59,11 @@ watch(activeMenu, (val) => {
           <template #title>题目管理</template>
         </el-menu-item>
       </el-menu>
-    </el-aside>
+
+        <div class="aside-footer">
+          <ThemeToggle :collapsed="isCollapse" />
+        </div>
+      </el-aside>
 
     <el-main>
       <DashboardPanel v-if="activeMenu === 'dashboard'" />
@@ -67,6 +81,7 @@ watch(activeMenu, (val) => {
 
 /* ========== 侧边栏 ========== */
 .el-aside {
+  position: relative;
   background: var(--bg-sidebar);
   overflow: hidden;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -88,6 +103,7 @@ watch(activeMenu, (val) => {
   border-bottom: 1px solid var(--border-base);
   transition: padding 0.3s;
   user-select: none;
+  white-space: nowrap;
 }
 
 .toggle-btn {
@@ -168,5 +184,33 @@ watch(activeMenu, (val) => {
 .el-main {
   background: var(--bg-page);
   padding: 24px;
+}
+
+/* ========== 侧边栏底部（主题切换） ========== */
+.aside-footer {
+  position: absolute;
+  bottom: 16px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  padding: 0 8px;
+}
+
+/* ========== 深色模式 CSS 变量（仅管理页） ========== */
+.admin-container.dark {
+  --bg-page: #14141a;
+  --bg-card: #1e1e28;
+  --bg-sidebar: #1a1a24;
+  --bg-hover: #2a2a36;
+  --bg-active: rgba(64, 158, 255, 0.12);
+  --border-base: #2e2e3a;
+  --border-light: #262632;
+  --text-primary: #e4e4ec;
+  --text-regular: #b0b0be;
+  --text-secondary: #787882;
+  --text-placeholder: #565662;
+  --color-primary: #60a5fa;
+  --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.3);
 }
 </style>

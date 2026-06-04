@@ -5,6 +5,7 @@ import DisplayView from '@/views/DisplayView.vue'
 import PlayerView from '@/views/PlayerView.vue'
 import AdminView from '@/views/AdminView.vue'
 import { getMe } from '@/api/users'
+import { useThemeStore } from '@/stores/theme'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -61,6 +62,13 @@ router.beforeEach(async (to) => {
       // 未登录，正常访问登录页
     }
   }
+})
+
+// ========== 深色模式：仅在管理页生效 ==========
+router.afterEach((to) => {
+  const theme = useThemeStore()
+  const isAdmin = to.path === '/admin'
+  document.documentElement.classList.toggle('dark', isAdmin && theme.isDark)
 })
 
 export default router

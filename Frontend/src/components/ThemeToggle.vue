@@ -2,51 +2,49 @@
 import { Sunny, Moon } from '@element-plus/icons-vue'
 import { useThemeStore } from '@/stores/theme'
 
+defineProps<{
+  collapsed?: boolean
+}>()
+
 const theme = useThemeStore()
 </script>
 
 <template>
-  <el-tooltip :content="theme.isDark ? '切换浅色模式' : '切换深色模式'" placement="right">
+  <el-tooltip :content="theme.isDark ? '切换浅色模式' : '切换深色模式'" placement="top">
     <div class="theme-toggle" @click="theme.toggle()">
-      <el-icon :size="20">
+      <el-icon :size="18">
         <component :is="theme.isDark ? Sunny : Moon" />
       </el-icon>
+      <span v-if="!collapsed" class="toggle-label">
+        {{ theme.isDark ? '浅色模式' : '深色模式' }}
+      </span>
     </div>
   </el-tooltip>
 </template>
 
 <style scoped>
 .theme-toggle {
-  position: fixed;
-  bottom: 32px;
-  left: 32px;
-  z-index: 1000;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: var(--bg-card);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: transparent;
   cursor: pointer;
-  color: var(--text-regular);
-  border: 1px solid var(--border-base);
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .theme-toggle:hover {
-  transform: scale(1.1);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  background: var(--bg-hover);
   color: var(--color-primary);
-  border-color: var(--color-primary);
 }
 
-/* 深色模式阴影加深 */
-:global(.dark) .theme-toggle {
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
-}
-
-:global(.dark) .theme-toggle:hover {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+.toggle-label {
+  font-size: 13px;
+  user-select: none;
 }
 </style>

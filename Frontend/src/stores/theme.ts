@@ -12,18 +12,11 @@ function getInitial(): boolean {
   return window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false
 }
 
-function applyTheme(isDark: boolean) {
-  document.documentElement.classList.toggle('dark', isDark)
-}
-
 export const useThemeStore = defineStore('theme', () => {
   const isDark = ref(getInitial())
 
-  // 初始化时立即应用
-  applyTheme(isDark.value)
-
+  // 持久化偏好到 localStorage，不在全局应用主题
   watch(isDark, (val) => {
-    applyTheme(val)
     try {
       localStorage.setItem(STORAGE_KEY, val ? 'dark' : 'light')
     } catch {}

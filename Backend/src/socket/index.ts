@@ -9,6 +9,44 @@ let io: SocketIOServer | null = null;
 /** userId → socket.id 映射，用于向指定选手推送结果 */
 const playerSockets = new Map<string, string>();
 
+/** 页面会话追踪：socket.id → { pageType, userId?, nickname? } */
+interface SessionInfo {
+  pageType: 'home' | 'login' | 'admin' | 'display' | 'player';
+  userId?: string;
+  nickname?: string;
+}
+const pageSessions = new Map<string, SessionInfo>();
+
+/** 向所有管理页推送会话状态更新 */
+function broadcastSessions() {
+  const sessions = {
+    home: 0,
+    login: 0,
+    admin: 0,
+    display: 0,
+    player: 0,
+    players: [] as { userId: string; nickname: string }[],
+  };
+  for (const info of pageSessions.values()) {
+    if (info.pageType === 'home') sessions.home++;
+    else if (info.pageType === 'login') sessions.login++;
+    else if (info.pageType === 'admin') sessions.admin++;
+    else if (info.pageType === 'display') sessions.display++;
+    else if (info.pageType === 'player') {
+      sessions.player++;
+      if (info.userId) {
+        sessions.players.push({ userId: info.userId, nickname: info.nickname || '' });
+      }
+    }
+  }
+  // 推送给所有管理页
+  for (const [sid, info] of pageSessions.entries()) {
+    if (info.pageType === 'admin') {
+      io?.to(sid).emit('admin:sessionUpdate', sessions);
+    }
+  }
+}
+
 /** 初始化 Socket.IO 并绑定到 HTTP 服务器 */
 export function initSocket(server: HttpServer): SocketIOServer {
   io = new SocketIOServer(server, {
@@ -21,10 +59,34 @@ export function initSocket(server: HttpServer): SocketIOServer {
   io.on('connection', (socket) => {
     console.log('客户端已连接：', socket.id);
 
-    // ── 选手注册（关联 userId 与 socket） ──
-    socket.on('player:register', (userId: string) => {
+    // ── 会话注册（所有页面连接时调用） ──
+    socket.on('session:register', (info: SessionInfo) => {
+      pageSessions.set(socket.id, info);
+      if (info.pageType === 'player' && info.userId) {
+        playerSockets.set(info.userId, socket.id);
+      }
+      console.log('会话注册：', info.pageType, info.userId || '', 'socket:', socket.id);
+      broadcastSessions();
+    });
+
+    // ── 管理页请求会话状态 ──
+    socket.on('admin:requestSessions', () => {
+      broadcastSessions();
+    });
+
+    // ── 选手注册（关联 userId 与 socket，并更新会话信息） ──
+    socket.on('player:register', (userId: string, nickname?: string) => {
       playerSockets.set(userId, socket.id);
+      // 更新会话中的选手信息
+      const existing = pageSessions.get(socket.id);
+      if (existing) {
+        existing.userId = userId;
+        existing.nickname = nickname || '';
+      } else {
+        pageSessions.set(socket.id, { pageType: 'player', userId, nickname: nickname || '' });
+      }
       console.log('选手已注册：', userId, 'socket:', socket.id);
+      broadcastSessions();
     });
 
     // ── 选手查询自己的答题状态（页面刷新后恢复） ──
@@ -137,6 +199,9 @@ export function initSocket(server: HttpServer): SocketIOServer {
           break;
         }
       }
+      // 清理会话并广播
+      pageSessions.delete(socket.id);
+      broadcastSessions();
     });
   });
 

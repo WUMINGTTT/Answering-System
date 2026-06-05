@@ -11,7 +11,7 @@ import DisplayRanking from '@/components/displayView/DisplayRanking.vue'
 import RiskQuestionGrid from '@/components/displayView/RiskQuestionGrid.vue'
 
 // ── Socket 同步 ──
-const { connected, serverState, selectRiskQuestion, clearQuestion } = useSocket({ syncRemote: true })
+const { connected, serverState, selectRiskQuestion, clearQuestion } = useSocket({ syncRemote: true, pageType: 'display' })
 
 // ── 倒计时（composable 封装 tick 逻辑） ──
 const {

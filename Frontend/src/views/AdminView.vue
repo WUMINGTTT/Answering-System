@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Monitor, User, Document, Fold, Expand } from '@element-plus/icons-vue'
+import { Monitor, User, Document, Fold, Expand, Connection } from '@element-plus/icons-vue'
 import UserManagement from '@/components/adminView/UserManagement.vue'
 import QuestionManagement from '@/components/adminView/QuestionManagement.vue'
 import DashboardPanel from '@/components/adminView/DashboardPanel.vue'
+import SessionManager from '@/components/adminView/SessionManager.vue'
 import ThemeToggle from '@/components/ThemeToggle.vue'
 import { useThemeStore } from '@/stores/theme'
 
@@ -58,6 +59,10 @@ watch(() => theme.isDark, (val) => {
           <el-icon><Document /></el-icon>
           <template #title>题目管理</template>
         </el-menu-item>
+        <el-menu-item index="sessions">
+          <el-icon><Connection /></el-icon>
+          <template #title>会话管理</template>
+        </el-menu-item>
       </el-menu>
 
         <div class="aside-footer">
@@ -69,6 +74,7 @@ watch(() => theme.isDark, (val) => {
       <DashboardPanel v-if="activeMenu === 'dashboard'" />
       <UserManagement v-else-if="activeMenu === 'users'" />
       <QuestionManagement v-else-if="activeMenu === 'questions'" />
+      <SessionManager v-else-if="activeMenu === 'sessions'" />
     </el-main>
   </el-container>
 </template>

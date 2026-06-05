@@ -3,6 +3,10 @@ import axios from 'axios'
 import { ref } from 'vue'
 import LoginForm from '@/components/loginView/LoginForm.vue'
 import RegisterForm from '@/components/loginView/RegisterForm.vue'
+import { useSocket } from '@/composables/useSocket'
+
+// 会话注册（仅用于在线状态追踪）
+useSocket({ syncRemote: false, pageType: 'login' })
 
 const activeTab = ref('login')
 

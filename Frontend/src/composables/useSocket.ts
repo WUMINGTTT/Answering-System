@@ -16,6 +16,16 @@ export interface PlayerMyStatus {
   result: AnswerResult | null
 }
 
+/** 会话在线状态 */
+export interface SessionData {
+  home: number
+  login: number
+  admin: number
+  display: number
+  player: number
+  players: { userId: string; nickname: string }[]
+}
+
 /** 答题结果 */
 export interface AnswerResult {
   questionId: string
@@ -45,6 +55,10 @@ export interface SyncedGameState {
 interface UseSocketOptions {
   /** 是否监听远端推送（展示页为 true，管理页为 false 避免回环） */
   syncRemote?: boolean
+  /** 页面类型（用于会话管理） */
+  pageType?: 'home' | 'login' | 'admin' | 'display' | 'player'
+  /** 选手信息（player 页面时传入） */
+  playerInfo?: { userId: string; nickname: string }
 }
 
 /** 与服务端 Socket.IO 同步游戏状态
@@ -53,7 +67,7 @@ interface UseSocketOptions {
  * - 展示页（syncRemote=true）：请求初始状态 + 持续监听远端推送
  */
 export function useSocket(opts: UseSocketOptions = {}) {
-  const { syncRemote = false } = opts
+  const { syncRemote = false, pageType, playerInfo } = opts
 
   const connected = ref(false)
   const serverState = ref<SyncedGameState | null>(null)
@@ -77,6 +91,14 @@ export function useSocket(opts: UseSocketOptions = {}) {
       connected.value = true
       // 首次连接 / 刷新时请求当前持久化状态
       socket?.emit('client:requestState')
+      // 注册会话
+      if (pageType) {
+        socket?.emit('session:register', {
+          pageType,
+          userId: playerInfo?.userId,
+          nickname: playerInfo?.nickname,
+        })
+      }
     })
 
     socket.on('disconnect', () => {
@@ -111,6 +133,13 @@ export function useSocket(opts: UseSocketOptions = {}) {
     socket.on('player:myStatus', (status: PlayerMyStatus) => {
       myStatus.value = status
     })
+
+    // 管理页：会话状态更新
+    if (pageType === 'admin') {
+      socket.on('admin:sessionUpdate', (data: SessionData) => {
+        sessionData.value = data
+      })
+    }
   }
 
   /** 推送状态变更到服务端（管理页调用） */
@@ -122,6 +151,11 @@ export function useSocket(opts: UseSocketOptions = {}) {
   /** 重置游戏状态 */
   function resetState() {
     socket?.emit('admin:resetState')
+  }
+
+  /** 请求会话状态（管理页使用） */
+  function requestSessions() {
+    socket?.emit('admin:requestSessions')
   }
 
   /** 展示页：点击风险题卡片，选中题目 */
@@ -145,9 +179,12 @@ export function useSocket(opts: UseSocketOptions = {}) {
   /** 选手状态（页面刷新后从服务端恢复） */
   const myStatus = ref<PlayerMyStatus | null>(null)
 
+  /** 会话在线状态（管理页使用） */
+  const sessionData = ref<SessionData>({ home: 0, login: 0, admin: 0, display: 0, player: 0, players: [] })
+
   /** 选手注册：将 userId 关联到当前 socket */
-  function registerPlayer(userId: string) {
-    socket?.emit('player:register', userId)
+  function registerPlayer(userId: string, nickname?: string) {
+    socket?.emit('player:register', userId, nickname)
   }
 
   /** 查询当前答题状态（页面刷新后恢复） */
@@ -178,6 +215,6 @@ export function useSocket(opts: UseSocketOptions = {}) {
 
   return {
     connected, serverState, pushState, resetState, selectRiskQuestion, clearQuestion,
-    registerPlayer, submitAnswer, resetPlayerAnswerState, answerReceived, answerResult, checkPlayerStatus, myStatus,
+    registerPlayer, submitAnswer, resetPlayerAnswerState, answerReceived, answerResult, checkPlayerStatus, myStatus, requestSessions, sessionData,
   }
 }

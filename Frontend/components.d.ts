@@ -57,6 +57,7 @@ declare module 'vue' {
     RiskQuestionGrid: typeof import('./src/components/displayView/RiskQuestionGrid.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    SessionManager: typeof import('./src/components/adminView/SessionManager.vue')['default']
     StatusControls: typeof import('./src/components/adminView/dashboard/StatusControls.vue')['default']
     ThemeToggle: typeof import('./src/components/ThemeToggle.vue')['default']
     UserManagement: typeof import('./src/components/adminView/UserManagement.vue')['default']

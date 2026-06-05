@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { User, Setting, Monitor, Key } from '@element-plus/icons-vue'
+import { useSocket } from '@/composables/useSocket'
 
 const router = useRouter()
+
+// 会话注册（仅用于在线状态追踪）
+useSocket({ syncRemote: false, pageType: 'home' })
 
 interface NavCard {
   title: string

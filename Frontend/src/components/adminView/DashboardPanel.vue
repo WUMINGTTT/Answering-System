@@ -14,7 +14,7 @@ const gameStore = useGameStatusStore()
 const countdownStore = useCountdownStore()
 
 // ── Socket 同步（管理页不监听远端广播，避免回环） ──
-const { connected, serverState, pushState } = useSocket({ syncRemote: false })
+const { connected, serverState, pushState } = useSocket({ syncRemote: false, pageType: 'admin' })
 
 /** 防回环：正在从远端同步时跳过本地推送 */
 let syncingRemote = false

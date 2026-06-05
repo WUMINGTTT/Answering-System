@@ -22,7 +22,7 @@ const {
   answerResult,
   checkPlayerStatus,
   myStatus,
-} = useSocket({ syncRemote: true })
+} = useSocket({ syncRemote: true, pageType: 'player' })
 
 // ── 倒计时 ──
 const { answerRemainingText, syncFromServer } = useDisplayCountdown()
@@ -40,7 +40,7 @@ onMounted(async () => {
     }
     user.value = res.data
     if (connected.value) {
-      registerPlayer(res.data.id)
+      registerPlayer(res.data.id, res.data.nickname)
       checkPlayerStatus(res.data.id)
     }
   } catch { /* 稍后重试 */ }
@@ -49,7 +49,7 @@ onMounted(async () => {
 
 watch(connected, (val) => {
   if (val && user.value) {
-    registerPlayer(user.value.id)
+    registerPlayer(user.value.id, user.value.nickname)
     checkPlayerStatus(user.value.id)
   }
 })

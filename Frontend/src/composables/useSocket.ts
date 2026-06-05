@@ -22,6 +22,8 @@ export interface SyncedGameState {
   isAnswerCounting: boolean
   isQuickAnswerCounting: boolean
   rankings: PlayerRanking[]
+  riskScoreFilter: number
+  usedRiskQuestionIds: string[]
 }
 
 interface UseSocketOptions {
@@ -92,6 +94,16 @@ export function useSocket(opts: UseSocketOptions = {}) {
     socket?.emit('admin:resetState')
   }
 
+  /** 展示页：点击风险题卡片，选中题目 */
+  function selectRiskQuestion(questionId: string, riskCode: string) {
+    socket?.emit('display:selectRiskQuestion', { questionId, riskCode })
+  }
+
+  /** 展示页：返回风险题列表（清除当前题目） */
+  function clearQuestion() {
+    socket?.emit('display:clearQuestion')
+  }
+
   function disconnect() {
     socket?.disconnect()
     socket = null
@@ -100,5 +112,5 @@ export function useSocket(opts: UseSocketOptions = {}) {
   onMounted(() => connect())
   onUnmounted(() => disconnect())
 
-  return { connected, serverState, pushState, resetState }
+  return { connected, serverState, pushState, resetState, selectRiskQuestion, clearQuestion }
 }

@@ -5,6 +5,7 @@ import {
   Trophy,
   QuestionFilled,
   TrendCharts,
+  RefreshLeft,
 } from '@element-plus/icons-vue'
 import {
   useGameStatusStore,
@@ -16,6 +17,10 @@ import CountdownPanel from './CountdownPanel.vue'
 
 defineProps<{
   connected?: boolean
+}>()
+
+const emit = defineEmits<{
+  'reset-used-questions': []
 }>()
 
 const store = useGameStatusStore()
@@ -51,6 +56,17 @@ const QUESTION_STATUS_OPTIONS: StatusOption[] = [
           <el-tooltip :content="connected ? '服务器已连接' : '服务器断开，正在重连...'" placement="bottom">
             <span class="conn-dot" :class="{ 'conn-dot--ok': connected }" />
           </el-tooltip>
+          <!-- 风险题阶段：重置已选题目 -->
+          <el-button
+            v-if="store.status === 'risk'"
+            :icon="RefreshLeft"
+            size="small"
+            type="warning"
+            plain
+            @click="emit('reset-used-questions')"
+          >
+            重置已选
+          </el-button>
         </div>
 
         <!-- 倒计时（必答题 / 抢答题时展示） -->

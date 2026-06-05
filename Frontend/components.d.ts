@@ -51,6 +51,7 @@ declare module 'vue' {
     QuestionList: typeof import('./src/components/adminView/dashboard/QuestionList.vue')['default']
     QuestionManagement: typeof import('./src/components/adminView/QuestionManagement.vue')['default']
     RegisterForm: typeof import('./src/components/loginView/RegisterForm.vue')['default']
+    RiskQuestionGrid: typeof import('./src/components/displayView/RiskQuestionGrid.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     StatusControls: typeof import('./src/components/adminView/dashboard/StatusControls.vue')['default']

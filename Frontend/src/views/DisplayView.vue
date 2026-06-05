@@ -1,15 +1,17 @@
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, onMounted } from 'vue'
 import { useSocket, type SyncedGameState, type PlayerRanking } from '@/composables/useSocket'
 import { useDisplayCountdown } from '@/composables/useDisplayCountdown'
 import type { Question } from '@/types/question'
+import { getAllQuestions } from '@/api/questions'
 import CountdownTimers from '@/components/displayView/CountdownTimers.vue'
 import QuestionCard from '@/components/displayView/QuestionCard.vue'
 import AnswerReveal from '@/components/displayView/AnswerReveal.vue'
 import DisplayRanking from '@/components/displayView/DisplayRanking.vue'
+import RiskQuestionGrid from '@/components/displayView/RiskQuestionGrid.vue'
 
 // ── Socket 同步 ──
-const { connected, serverState } = useSocket({ syncRemote: true })
+const { connected, serverState, selectRiskQuestion, clearQuestion } = useSocket({ syncRemote: true })
 
 // ── 倒计时（composable 封装 tick 逻辑） ──
 const {
@@ -31,6 +33,38 @@ const showAnswer = ref(false)
 const phase = ref('')
 const rankings = ref<PlayerRanking[]>([])
 
+// ── 风险题数据 ──
+const allQuestions = ref<Question[]>([])
+const riskScoreFilter = ref(0)
+const usedRiskQuestionIds = ref<string[]>([])
+
+/** 分值 → 字母代号 */
+const SCORE_LETTER: Record<number, string> = { 10: 'A', 20: 'B', 30: 'C' }
+
+/** 风险题 ID → 代号（与后台相同算法） */
+const riskCodeMap = computed(() => {
+  const map = new Map<string, string>()
+  const riskQuestions = allQuestions.value.filter((q) => q.category === 'risk')
+  const counters: Record<number, number> = {}
+  for (const q of riskQuestions) {
+    const s = q.score ?? 0
+    const cur = counters[s] ?? 0
+    counters[s] = cur + 1
+    const letter = SCORE_LETTER[s] || '?'
+    map.set(q.id, `${letter}${counters[s]}`)
+  }
+  return map
+})
+
+/** 展示用的风险题列表（按后台分值筛选） */
+const displayRiskQuestions = computed(() => {
+  let list = allQuestions.value.filter((q) => q.category === 'risk')
+  if (riskScoreFilter.value !== 0) {
+    list = list.filter((q) => q.score === riskScoreFilter.value)
+  }
+  return list
+})
+
 // ── 远端 → 本地 ──
 watch(serverState, (s: SyncedGameState | null) => {
   if (!s) return
@@ -39,10 +73,34 @@ watch(serverState, (s: SyncedGameState | null) => {
   showAnswer.value = s.showAnswer
   phase.value = s.status
   rankings.value = s.rankings || []
+  if (s.riskScoreFilter !== undefined) riskScoreFilter.value = s.riskScoreFilter
+  if (s.usedRiskQuestionIds) usedRiskQuestionIds.value = [...s.usedRiskQuestionIds]
   syncFromServer(s)
 })
 
+// ── 拉取全部题目（用于计算风险题代号） ──
+async function fetchQuestions() {
+  try {
+    const { data: res } = await getAllQuestions()
+    allQuestions.value = res.data
+  } catch { /* 静默失败，稍后重试 */ }
+}
+onMounted(() => fetchQuestions())
+
+// ── 风险题卡片点击 → 展示题目 ──
+function onRiskCardSelect(q: Question, code: string) {
+  selectRiskQuestion(q.id, code)
+}
+
+// ── 返回风险题列表 ──
+function onBackToGrid() {
+  clearQuestion()
+}
+
 // ── 辅助计算 ──
+const isRiskPhase = computed(() => phase.value === 'risk')
+const showRiskGrid = computed(() => isRiskPhase.value && !currentQuestion.value)
+
 const categoryLabel = computed(() => {
   const map: Record<string, string> = {
     required: '必答题',
@@ -95,7 +153,20 @@ const typeLabel = computed(() => {
           <DisplayRanking :rankings="rankings" />
         </template>
 
-        <!-- 答题展示 -->
+        <!-- 风险题网格（未选题时） -->
+        <template v-else-if="showRiskGrid">
+          <div class="risk-grid-header">
+            <span class="risk-grid-title">请选择题号</span>
+          </div>
+          <RiskQuestionGrid
+            :questions="displayRiskQuestions"
+            :code-map="riskCodeMap"
+            :used-ids="usedRiskQuestionIds"
+            @select="onRiskCardSelect"
+          />
+        </template>
+
+        <!-- 答题展示（含风险题选中后展示） -->
         <template v-else-if="currentQuestion">
           <!-- 倒计时（仅管理员启动后展示） -->
           <CountdownTimers
@@ -108,6 +179,11 @@ const typeLabel = computed(() => {
             :quick-answer-text="quickAnswerRemainingText"
             :answer-text="answerRemainingText"
           />
+
+          <!-- 风险题返回按钮 -->
+          <div v-if="isRiskPhase" class="back-bar">
+            <button class="back-btn" @click="onBackToGrid">← 返回列表</button>
+          </div>
 
           <!-- 题目卡片 -->
           <QuestionCard
@@ -215,6 +291,40 @@ const typeLabel = computed(() => {
   justify-content: center;
   padding: 20px 60px;
   min-height: 0;
+}
+
+/* ========== 风险题网格标题 ========== */
+.risk-grid-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.risk-grid-title {
+  font-size: 22px;
+  font-weight: 600;
+  opacity: 0.8;
+  letter-spacing: 4px;
+}
+
+/* ========== 返回按钮 ========== */
+.back-bar {
+  margin-bottom: 16px;
+}
+
+.back-btn {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 15px;
+  padding: 8px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+  letter-spacing: 1px;
+}
+
+.back-btn:hover {
+  background: rgba(255, 255, 255, 0.22);
 }
 
 /* ========== 等待状态 ========== */

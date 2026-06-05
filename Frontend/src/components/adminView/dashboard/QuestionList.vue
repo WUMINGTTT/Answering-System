@@ -1,11 +1,16 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { QuestionFilled, Search } from '@element-plus/icons-vue'
 import { getAllQuestions } from '@/api/questions'
 import type { Question } from '@/types/question'
 import { useGameStatusStore, QUESTION_PHASES } from '@/stores/gameStatus'
 
 const store = useGameStatusStore()
+
+// ── 向上层 DashboardPanel 暴露风险题数据 ──
+const emit = defineEmits<{
+  'risk-data-changed': [payload: { riskQuestions: Question[]; riskCodeMap: Map<string, string>; riskScoreFilter: number }]
+}>()
 
 // ---------- 题目列表 ----------
 const questions = ref<Question[]>([])
@@ -27,10 +32,11 @@ const riskCodeMap = computed(() => {
   // 按分值分组，组内按原始顺序编号
   const counters: Record<number, number> = {}
   for (const q of riskQuestions) {
-    if (!counters[q.score]) counters[q.score] = 0
-    counters[q.score]++
-    const letter = SCORE_LETTER[q.score] || '?'
-    map.set(q.id, `${letter}${counters[q.score]}`)
+    const s = q.score ?? 0
+    const cur = counters[s] ?? 0
+    counters[s] = cur + 1
+    const letter = SCORE_LETTER[s] || '?'
+    map.set(q.id, `${letter}${counters[s]}`)
   }
   return map
 })
@@ -69,12 +75,29 @@ async function fetchQuestions() {
   try {
     const { data: res } = await getAllQuestions()
     questions.value = res.data
+    emitRiskData()
   } catch {
     ElMessage.error('获取题目列表失败')
   } finally {
     questionsLoading.value = false
   }
 }
+
+// ── 风险题数据变更时通知父组件 ──
+const allRiskQuestions = computed(() =>
+  questions.value.filter((q) => q.category === 'risk'),
+)
+
+function emitRiskData() {
+  emit('risk-data-changed', {
+    riskQuestions: allRiskQuestions.value,
+    riskCodeMap: riskCodeMap.value,
+    riskScoreFilter: riskScoreFilter.value,
+  })
+}
+
+// 分值筛选变化时同步
+watch(riskScoreFilter, () => emitRiskData())
 
 // ---------- 设置当前题目 ----------
 function toggleCurrentQuestion(q: Question) {

@@ -8,6 +8,7 @@ import { useSocket, type PlayerRanking } from '@/composables/useSocket'
 import { useGameStatusStore } from '@/stores/gameStatus'
 import { useCountdownStore } from '@/stores/countdown'
 import { getAllUsers } from '@/api/users'
+import type { Question } from '@/types/question'
 
 const gameStore = useGameStatusStore()
 const countdownStore = useCountdownStore()
@@ -43,6 +44,8 @@ watch(serverState, (s) => {
   }
 
   if (s.rankings) rankings.value = s.rankings
+  if (s.usedRiskQuestionIds) usedRiskQuestionIds.value = [...s.usedRiskQuestionIds]
+  if (s.riskScoreFilter !== undefined) riskScoreFilter.value = s.riskScoreFilter
 
   nextTick(() => { syncingRemote = false })
 })
@@ -59,6 +62,17 @@ watch(() => gameStore.currentQuestion, () => {
   if (countdownStore.isAnswerCounting || countdownStore.isQuickAnswerCounting) {
     countdownStore.resetAll()
     ElMessage.info('已切换题目，倒计时已自动停止')
+  }
+  // 风险题选中时记录为已使用
+  if (
+    gameStore.status === 'risk' &&
+    gameStore.currentQuestion &&
+    gameStore.currentQuestion.category === 'risk'
+  ) {
+    const id = gameStore.currentQuestion.id
+    if (!usedRiskQuestionIds.value.includes(id)) {
+      usedRiskQuestionIds.value.push(id)
+    }
   }
 })
 
@@ -88,6 +102,19 @@ watch(() => gameStore.status, (s) => {
   if (s === 'ranking') fetchRankings()
 })
 
+// ── 风险题数据（从 QuestionList 子组件接收） ──
+const riskScoreFilter = ref(0)
+const usedRiskQuestionIds = ref<string[]>([])
+
+/** QuestionList 子组件通知风险题数据变化 */
+function onRiskDataChanged(payload: {
+  riskQuestions: Question[]
+  riskCodeMap: Map<string, string>
+  riskScoreFilter: number
+}) {
+  riskScoreFilter.value = payload.riskScoreFilter
+}
+
 // ── 本地 → 远端：管理员操作时推送关键状态变更 ──
 /** 提取需同步的最小状态集（不含高频变化的 remaining） */
 const syncPayload = computed(() => ({
@@ -102,6 +129,8 @@ const syncPayload = computed(() => ({
   isAnswerCounting: countdownStore.isAnswerCounting,
   isQuickAnswerCounting: countdownStore.isQuickAnswerCounting,
   rankings: rankings.value,
+  riskScoreFilter: riskScoreFilter.value,
+  usedRiskQuestionIds: [...usedRiskQuestionIds.value],
 }))
 
 watch(syncPayload, (val) => {
@@ -113,7 +142,7 @@ watch(syncPayload, (val) => {
 <template>
   <div class="dashboard">
     <!-- 状态控制 -->
-    <StatusControls :connected="connected" />
+    <StatusControls :connected="connected" @reset-used-questions="usedRiskQuestionIds = []" />
 
     <!-- 当前题目 | 选手列表 | 题目列表 -->
     <el-row :gutter="16" class="list-row">
@@ -124,7 +153,7 @@ watch(syncPayload, (val) => {
         <PlayerList />
       </el-col>
       <el-col :xs="24" :sm="12" :md="10">
-        <QuestionList />
+        <QuestionList @risk-data-changed="onRiskDataChanged" />
       </el-col>
     </el-row>
   </div>

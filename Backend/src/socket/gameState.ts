@@ -23,6 +23,10 @@ export interface GameState {
   isAnswerCounting: boolean;
   isQuickAnswerCounting: boolean;
   rankings: PlayerRanking[];
+  /** 风险题阶段：管理员当前的分值筛选（0 = 全部） */
+  riskScoreFilter: number;
+  /** 风险题阶段：已被选择过的题目 ID 列表 */
+  usedRiskQuestionIds: string[];
 }
 
 /** 默认游戏状态 */
@@ -39,6 +43,8 @@ function createDefaultState(): GameState {
     isAnswerCounting: false,
     isQuickAnswerCounting: false,
     rankings: [],
+    riskScoreFilter: 0,
+    usedRiskQuestionIds: [],
   };
 }
 

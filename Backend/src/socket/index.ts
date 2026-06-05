@@ -1,6 +1,7 @@
 import type { Server as HttpServer } from 'node:http';
 import { Server as SocketIOServer } from 'socket.io';
 import { getGameState, updateGameState, resetGameState } from './gameState.js';
+import { getAllQuestions } from '../data-access/questionDao.js';
 
 let io: SocketIOServer | null = null;
 
@@ -33,6 +34,33 @@ export function initSocket(server: HttpServer): SocketIOServer {
     socket.on('admin:resetState', () => {
       const state = resetGameState();
       io?.emit('state:updated', state);
+    });
+
+    // 展示页清除当前题目（返回风险题列表）
+    socket.on('display:clearQuestion', () => {
+      const updated = updateGameState({ currentQuestion: null, currentRiskCode: null, showAnswer: false });
+      io?.emit('state:updated', updated);
+    });
+
+    // 展示页点击风险题卡片 → 选中题目并标记为已使用
+    socket.on('display:selectRiskQuestion', async (payload: { questionId: string; riskCode: string }) => {
+      const questions = await getAllQuestions();
+      const question = questions.find((q) => q.id === payload.questionId);
+      if (!question) return;
+
+      const current = getGameState();
+      const usedIds = [...current.usedRiskQuestionIds];
+      if (!usedIds.includes(payload.questionId)) {
+        usedIds.push(payload.questionId);
+      }
+
+      const updated = updateGameState({
+        currentQuestion: question,
+        currentRiskCode: payload.riskCode,
+        showAnswer: false,
+        usedRiskQuestionIds: usedIds,
+      });
+      io?.emit('state:updated', updated);
     });
 
     socket.on('disconnect', (reason) => {

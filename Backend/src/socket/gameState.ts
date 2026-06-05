@@ -31,6 +31,8 @@ export interface GameState {
   pendingAnswers: Record<string, Record<string, string[]>>;
   /** 答题结果：questionId → userId → 得分信息 */
   answerResults: Record<string, Record<string, { correct: boolean; score: number; submitted: boolean; timeout: boolean }>>;
+  /** 服务端时间戳（用于客户端校准倒计时时钟偏差） */
+  serverTime: number;
 }
 
 /** 默认游戏状态 */
@@ -51,6 +53,7 @@ function createDefaultState(): GameState {
     usedRiskQuestionIds: [],
     pendingAnswers: {},
     answerResults: {},
+    serverTime: Date.now(),
   };
 }
 
@@ -58,7 +61,7 @@ let state: GameState = createDefaultState();
 
 /** 获取当前游戏状态（只读副本） */
 export function getGameState(): GameState {
-  return { ...state, currentQuestion: state.currentQuestion ? { ...state.currentQuestion } : null };
+  return { ...state, currentQuestion: state.currentQuestion ? { ...state.currentQuestion } : null, serverTime: Date.now() };
 }
 
 /** 更新游戏状态（部分合并） */

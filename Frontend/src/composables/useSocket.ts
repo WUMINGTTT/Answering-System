@@ -50,6 +50,7 @@ export interface SyncedGameState {
   rankings: PlayerRanking[]
   riskScoreFilter: number
   usedRiskQuestionIds: string[]
+  serverTime: number
 }
 
 interface UseSocketOptions {

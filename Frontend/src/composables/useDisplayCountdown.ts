@@ -1,9 +1,8 @@
 import { ref, computed, watch, onUnmounted } from 'vue'
 import type { SyncedGameState } from './useSocket'
 
-/** 展示页倒计时逻辑：从服务端状态同步 + 本地独立 tick */
+/** 展示页 / 选手页倒计时逻辑：从服务端状态同步 + 本地独立 tick */
 export function useDisplayCountdown() {
-  // ── 状态 ──
   const answerEndTime = ref<number | null>(null)
   const quickAnswerEndTime = ref<number | null>(null)
   const isAnswerCounting = ref(false)
@@ -23,41 +22,46 @@ export function useDisplayCountdown() {
     return `${String(m).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`
   }
 
-  // ── 从服务端状态同步 ──
+  // ── 本地 tick：基于服务端初始剩余时间 + 本地流逝时间，不依赖绝对时间戳 ──
+  let initialAnswerRemaining = 0
+  let initialQuickRemaining = 0
+  const tickStart = ref(0)
+
   function syncFromServer(s: SyncedGameState) {
     answerEndTime.value = s.answerEndTime
     quickAnswerEndTime.value = s.quickAnswerEndTime
     isAnswerCounting.value = s.isAnswerCounting
     isQuickAnswerCounting.value = s.isQuickAnswerCounting
 
-    if (s.isAnswerCounting && s.answerEndTime) {
-      answerRemaining.value = Math.max(0, Math.ceil((s.answerEndTime - Date.now()) / 1000))
+    if (s.isAnswerCounting && s.answerEndTime && s.serverTime) {
+      // 用服务端时间计算剩余秒数，消除客户端时钟偏差
+      initialAnswerRemaining = Math.max(0, (s.answerEndTime - s.serverTime) / 1000)
+      tickStart.value = Date.now()
+      answerRemaining.value = Math.ceil(initialAnswerRemaining)
     }
-    if (s.isQuickAnswerCounting && s.quickAnswerEndTime) {
-      quickAnswerRemaining.value = Math.max(0, Math.ceil((s.quickAnswerEndTime - Date.now()) / 1000))
+    if (s.isQuickAnswerCounting && s.quickAnswerEndTime && s.serverTime) {
+      initialQuickRemaining = Math.max(0, (s.quickAnswerEndTime - s.serverTime) / 1000)
+      tickStart.value = Date.now()
+      quickAnswerRemaining.value = Math.ceil(initialQuickRemaining)
     }
   }
 
-  // ── 本地 tick 定时器 ──
+  // ── 本地 tick 定时器（基于流逝时间递减，不受时钟偏差影响） ──
   let timerHandle: ReturnType<typeof setInterval> | null = null
 
   function tick() {
-    const now = Date.now()
-    if (isAnswerCounting.value && answerEndTime.value) {
-      const r = Math.max(0, Math.ceil((answerEndTime.value - now) / 1000))
-      answerRemaining.value = r
-      if (r <= 0) {
+    const elapsed = (Date.now() - tickStart.value) / 1000
+    if (isAnswerCounting.value) {
+      answerRemaining.value = Math.max(0, Math.ceil(initialAnswerRemaining - elapsed))
+      if (initialAnswerRemaining - elapsed <= 0) {
         isAnswerCounting.value = false
-        answerEndTime.value = null
         answerRemaining.value = 0
       }
     }
-    if (isQuickAnswerCounting.value && quickAnswerEndTime.value) {
-      const r = Math.max(0, Math.ceil((quickAnswerEndTime.value - now) / 1000))
-      quickAnswerRemaining.value = r
-      if (r <= 0) {
+    if (isQuickAnswerCounting.value) {
+      quickAnswerRemaining.value = Math.max(0, Math.ceil(initialQuickRemaining - elapsed))
+      if (initialQuickRemaining - elapsed <= 0) {
         isQuickAnswerCounting.value = false
-        quickAnswerEndTime.value = null
         quickAnswerRemaining.value = 0
       }
     }

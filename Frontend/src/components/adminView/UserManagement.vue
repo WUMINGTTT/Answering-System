@@ -3,7 +3,7 @@ import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { Plus, Delete, Edit, View, Hide, DocumentCopy, Search, InfoFilled, Download } from '@element-plus/icons-vue'
 import { getAllUsers, createUser, updateUser, deleteUser, deleteAllUsers } from '@/api/users'
-import { addScore, deleteScore } from '@/api/scores'
+import { addScore, deleteScore, deleteAllScores } from '@/api/scores'
 import type { User } from '@/types/user'
 import type { ScoreDetail, CreateScore } from '@/types/score'
 import * as XLSX from 'xlsx'
@@ -303,6 +303,35 @@ async function onDeleteScore(scoreId: string, score: number) {
   }
 }
 
+// ---------- 删除全部得分 ----------
+const deletingAllScores = ref(false)
+
+async function onDeleteAllScores() {
+  const user = scoreUser.value
+  if (!user) return
+  if ((user.scoreDetails?.length ?? 0) === 0) {
+    ElMessage.warning('暂无得分记录可删除')
+    return
+  }
+
+  const ok = await showConfirm(
+    `确定要删除「${user.nickname}」的全部 ${user.scoreDetails.length} 条得分记录吗？此操作不可恢复！`,
+  )
+  if (!ok) return
+
+  deletingAllScores.value = true
+  try {
+    await deleteAllScores(user.id)
+    ElMessage.success(`已删除「${user.nickname}」的全部得分`)
+    user.scoreDetails = []
+    user.totalScore = 0
+  } catch {
+    ElMessage.error('删除失败')
+  } finally {
+    deletingAllScores.value = false
+  }
+}
+
 </script>
 
 <template>
@@ -449,6 +478,14 @@ async function onDeleteScore(scoreId: string, score: number) {
         <el-input-number v-model="scoreForm.score" :min="-999" :max="999" style="width: 140px" />
         <el-input v-model="scoreForm.reason" placeholder="得分原因" style="width: 200px" />
         <el-button type="primary" :loading="scoreLoading" @click="onAddScore">添加</el-button>
+        <el-button
+          type="danger"
+          :icon="Delete"
+          :loading="deletingAllScores"
+          @click="onDeleteAllScores"
+        >
+          删除全部
+        </el-button>
       </div>
 
       <!-- 得分列表 -->

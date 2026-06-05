@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, reactive } from 'vue'
 import { UserFilled, Plus, Search, Delete } from '@element-plus/icons-vue'
 import { getAllUsers } from '@/api/users'
-import { addScore, deleteScore } from '@/api/scores'
+import { addScore, deleteScore, deleteAllScores } from '@/api/scores'
 import type { User } from '@/types/user'
 import type { ScoreDetail } from '@/types/score'
 
@@ -127,6 +127,44 @@ async function onDeleteScore(scoreDetail: ScoreDetail) {
   }
 }
 
+// ---------- 删除全部得分 ----------
+const deletingAllScores = ref(false)
+
+async function onDeleteAllScores() {
+  const user = detailUser.value
+  if (!user) return
+  if ((user.scoreDetails?.length ?? 0) === 0) {
+    ElMessage.warning('暂无得分记录可删除')
+    return
+  }
+
+  try {
+    await ElMessageBox.confirm(
+      `确定要删除「${user.nickname}」的全部 ${user.scoreDetails.length} 条得分记录吗？此操作不可恢复！`,
+      '删除全部得分',
+      { confirmButtonText: '确认删除', cancelButtonText: '取消', type: 'warning' },
+    )
+  } catch {
+    return
+  }
+
+  deletingAllScores.value = true
+  try {
+    await deleteAllScores(user.id)
+    ElMessage.success(`已删除「${user.nickname}」的全部得分`)
+    const target = users.value.find((u) => u.id === user.id)
+    if (target) {
+      target.totalScore = 0
+      target.scoreDetails = []
+    }
+    detailUser.value = users.value.find((u) => u.id === user.id) || null
+  } catch (err: any) {
+    ElMessage.error(err?.response?.data?.message || '删除失败')
+  } finally {
+    deletingAllScores.value = false
+  }
+}
+
 // ---------- 工具 ----------
 function formatTime(ts: number): string {
   const d = new Date(ts)
@@ -212,15 +250,26 @@ onMounted(() => {
           >{{ detailUser?.scoreDetails?.length ?? 0 }} 条记录</span
         >
       </div>
-      <el-button
-        v-if="!showAddForm"
-        type="primary"
-        size="small"
-        :icon="Plus"
-        @click="showAddForm = true"
-      >
-        添加得分
-      </el-button>
+      <div class="detail-header-actions">
+        <el-button
+          v-if="!showAddForm"
+          type="primary"
+          size="small"
+          :icon="Plus"
+          @click="showAddForm = true"
+        >
+          添加得分
+        </el-button>
+        <el-button
+          type="danger"
+          size="small"
+          :icon="Delete"
+          :loading="deletingAllScores"
+          @click="onDeleteAllScores"
+        >
+          删除全部
+        </el-button>
+      </div>
     </div>
 
     <!-- 添加得分表单（可折叠） -->
@@ -450,6 +499,11 @@ onMounted(() => {
 .detail-user-count {
   font-size: 12px;
   color: var(--text-secondary);
+}
+
+.detail-header-actions {
+  display: flex;
+  gap: 8px;
 }
 
 /* 添加得分行内表单 */

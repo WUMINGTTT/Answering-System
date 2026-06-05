@@ -11,6 +11,8 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AnnouncementPanel: typeof import('./src/components/playerView/AnnouncementPanel.vue')['default']
+    AnswerOptions: typeof import('./src/components/playerView/AnswerOptions.vue')['default']
     AnswerReveal: typeof import('./src/components/displayView/AnswerReveal.vue')['default']
     CountdownPanel: typeof import('./src/components/adminView/dashboard/CountdownPanel.vue')['default']
     CountdownTimers: typeof import('./src/components/displayView/CountdownTimers.vue')['default']
@@ -46,6 +48,7 @@ declare module 'vue' {
     ElTag: typeof import('element-plus/es')['ElTag']
     ElTooltip: typeof import('element-plus/es')['ElTooltip']
     LoginForm: typeof import('./src/components/loginView/LoginForm.vue')['default']
+    PlayerInfoBar: typeof import('./src/components/playerView/PlayerInfoBar.vue')['default']
     PlayerList: typeof import('./src/components/adminView/dashboard/PlayerList.vue')['default']
     QuestionCard: typeof import('./src/components/displayView/QuestionCard.vue')['default']
     QuestionList: typeof import('./src/components/adminView/dashboard/QuestionList.vue')['default']

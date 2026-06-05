@@ -200,7 +200,7 @@ const typeLabel = computed(() => {
 
         <!-- 等待中 -->
         <div v-else class="waiting-state">
-          <div class="waiting-text">等待管理员选题...</div>
+          <div class="waiting-text">等待选题...</div>
           <div class="waiting-sub">题目将在此处展示</div>
         </div>
       </div>

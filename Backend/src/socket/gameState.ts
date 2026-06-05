@@ -27,6 +27,10 @@ export interface GameState {
   riskScoreFilter: number;
   /** 风险题阶段：已被选择过的题目 ID 列表 */
   usedRiskQuestionIds: string[];
+  /** 选手答题记录：questionId → userId → 选手提交的答案数组 */
+  pendingAnswers: Record<string, Record<string, string[]>>;
+  /** 答题结果：questionId → userId → 得分信息 */
+  answerResults: Record<string, Record<string, { correct: boolean; score: number; submitted: boolean; timeout: boolean }>>;
 }
 
 /** 默认游戏状态 */
@@ -45,6 +49,8 @@ function createDefaultState(): GameState {
     rankings: [],
     riskScoreFilter: 0,
     usedRiskQuestionIds: [],
+    pendingAnswers: {},
+    answerResults: {},
   };
 }
 

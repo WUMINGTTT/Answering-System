@@ -2,14 +2,18 @@ import type { Server as HttpServer } from 'node:http';
 import { Server as SocketIOServer } from 'socket.io';
 import { getGameState, updateGameState, resetGameState } from './gameState.js';
 import { getAllQuestions } from '../data-access/questionDao.js';
+import { addScore } from '../data-access/scoreDao.js';
 
 let io: SocketIOServer | null = null;
+
+/** userId → socket.id 映射，用于向指定选手推送结果 */
+const playerSockets = new Map<string, string>();
 
 /** 初始化 Socket.IO 并绑定到 HTTP 服务器 */
 export function initSocket(server: HttpServer): SocketIOServer {
   io = new SocketIOServer(server, {
     cors: {
-      origin: '*', // 开发阶段允许所有来源，生产环境应限制
+      origin: '*',
       methods: ['GET', 'POST'],
     },
   });
@@ -17,32 +21,72 @@ export function initSocket(server: HttpServer): SocketIOServer {
   io.on('connection', (socket) => {
     console.log('客户端已连接：', socket.id);
 
-    // 客户端请求当前状态（页面刷新 / 首次打开）
+    // ── 选手注册（关联 userId 与 socket） ──
+    socket.on('player:register', (userId: string) => {
+      playerSockets.set(userId, socket.id);
+      console.log('选手已注册：', userId, 'socket:', socket.id);
+    });
+
+    // ── 选手查询自己的答题状态（页面刷新后恢复） ──
+    socket.on('player:checkStatus', (userId: string) => {
+      const state = getGameState();
+      const questionId = state.currentQuestion?.id;
+      if (!questionId) {
+        socket.emit('player:myStatus', { questionId: null, submitted: false, result: null });
+        return;
+      }
+      const submitted = !!state.pendingAnswers[questionId]?.[userId];
+      const stored = state.answerResults[questionId]?.[userId] || null;
+      socket.emit('player:myStatus', {
+        questionId,
+        submitted,
+        result: stored
+          ? {
+              correct: stored.correct,
+              score: stored.score,
+              timeout: stored.timeout,
+              correctAnswers: state.currentQuestion?.answers || [],
+            }
+          : null,
+      });
+    });
+
+    // ── 客户端请求当前状态（页面刷新 / 首次打开） ──
     socket.on('client:requestState', () => {
       const state = getGameState();
       socket.emit('state:current', state);
     });
 
-    // 管理员推送完整游戏状态
+    // ── 管理员推送完整游戏状态 ──
     socket.on('admin:syncState', (patch: Record<string, unknown>) => {
+      const prev = getGameState();
+
+      // 检测答题倒计时结束（true → false），触发自动评分
+      if (
+        prev.isAnswerCounting === true &&
+        patch.isAnswerCounting === false &&
+        prev.currentQuestion
+      ) {
+        evaluateAnswers(prev.currentQuestion.id, prev);
+      }
+
       const updated = updateGameState(patch);
-      // 广播给所有客户端（含发送方）
       io?.emit('state:updated', updated);
     });
 
-    // 管理员重置游戏状态
+    // ── 管理员重置游戏状态 ──
     socket.on('admin:resetState', () => {
       const state = resetGameState();
       io?.emit('state:updated', state);
     });
 
-    // 展示页清除当前题目（返回风险题列表）
+    // ── 展示页清除当前题目（返回风险题列表） ──
     socket.on('display:clearQuestion', () => {
       const updated = updateGameState({ currentQuestion: null, currentRiskCode: null, showAnswer: false });
       io?.emit('state:updated', updated);
     });
 
-    // 展示页点击风险题卡片 → 选中题目并标记为已使用
+    // ── 展示页点击风险题卡片 → 选中题目并标记为已使用 ──
     socket.on('display:selectRiskQuestion', async (payload: { questionId: string; riskCode: string }) => {
       const questions = await getAllQuestions();
       const question = questions.find((q) => q.id === payload.questionId);
@@ -63,8 +107,36 @@ export function initSocket(server: HttpServer): SocketIOServer {
       io?.emit('state:updated', updated);
     });
 
+    // ── 选手提交答案 ──
+    socket.on('player:submitAnswer', (payload: { userId: string; questionId: string; answers: string[] }) => {
+      const current = getGameState();
+
+      // 仅在答题倒计时运行中接受提交
+      if (!current.isAnswerCounting) return;
+      if (current.currentQuestion?.id !== payload.questionId) return;
+
+      // 每人每题仅保留最后一次提交
+      if (!current.pendingAnswers[payload.questionId]) {
+        current.pendingAnswers[payload.questionId] = {};
+      }
+      current.pendingAnswers[payload.questionId][payload.userId] = payload.answers;
+
+      updateGameState({ pendingAnswers: { ...current.pendingAnswers } });
+
+      // 告知选手已收到提交
+      socket.emit('player:answerReceived', { questionId: payload.questionId });
+    });
+
+    // ── 断开清理 ──
     socket.on('disconnect', (reason) => {
       console.log('客户端已断开：', socket.id, '原因：', reason);
+      // 清理选手映射
+      for (const [uid, sid] of playerSockets.entries()) {
+        if (sid === socket.id) {
+          playerSockets.delete(uid);
+          break;
+        }
+      }
     });
   });
 
@@ -74,4 +146,76 @@ export function initSocket(server: HttpServer): SocketIOServer {
 /** 获取已初始化的 Socket.IO 实例（未初始化返回 null） */
 export function getIO(): SocketIOServer | null {
   return io;
+}
+
+// ── 内部：答题倒计时结束后自动评分 ──
+
+async function evaluateAnswers(questionId: string, prevState: ReturnType<typeof getGameState>) {
+  const question = prevState.currentQuestion;
+  if (!question) return;
+
+  const pending = prevState.pendingAnswers[questionId] || {};
+  const results: Record<string, { correct: boolean; score: number; submitted: boolean; timeout: boolean }> = {};
+
+  // 判断倒计时是自然结束还是强制停止
+  const now = Date.now();
+  const isNaturalExpiry = prevState.answerEndTime !== null && now >= prevState.answerEndTime - 500;
+
+  const correctSet = new Set(question.answers.map((a) => a.trim().toLowerCase()));
+
+  // ── 处理已提交的答案 ──
+  for (const [userId, submittedAnswers] of Object.entries(pending)) {
+    const submittedSet = new Set(submittedAnswers.map((a) => a.trim().toLowerCase()));
+    const isCorrect =
+      submittedSet.size === correctSet.size &&
+      [...submittedSet].every((a) => correctSet.has(a));
+
+    const score = isCorrect ? question.score : 0;
+    const reason = isCorrect
+      ? `答题正确 +${question.score}分 [${questionId}]`
+      : `答题错误 - 0分 [${questionId}]`;
+
+    try {
+      await addScore(userId, { score, reason });
+    } catch { /* 用户可能已被删除 */ }
+
+    results[userId] = { correct: isCorrect, score, submitted: true, timeout: false };
+  }
+
+  // ── 自然结束时：未提交的在线选手记为超时 ──
+  if (isNaturalExpiry) {
+    for (const [userId] of playerSockets.entries()) {
+      if (results[userId]) continue; // 已提交，跳过
+
+      const reason = `超时未答 - 0分 [${questionId}]`;
+      try {
+        await addScore(userId, { score: 0, reason });
+      } catch { /* 忽略 */ }
+
+      results[userId] = { correct: false, score: 0, submitted: false, timeout: true };
+    }
+  }
+
+  // ── 推送结果给每个选手 ──
+  for (const [userId, result] of Object.entries(results)) {
+    const sid = playerSockets.get(userId);
+    if (sid) {
+      io?.to(sid).emit('player:answerResult', {
+        questionId,
+        correct: result.correct,
+        score: result.score,
+        correctAnswers: question.answers,
+        timeout: result.timeout,
+      });
+    }
+  }
+
+  // 持久化结果
+  const current = getGameState();
+  updateGameState({
+    answerResults: {
+      ...current.answerResults,
+      [questionId]: results,
+    },
+  });
 }

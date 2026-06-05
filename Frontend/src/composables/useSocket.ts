@@ -9,6 +9,22 @@ export interface PlayerRanking {
   totalScore: number
 }
 
+/** 选手状态（刷新恢复用） */
+export interface PlayerMyStatus {
+  questionId: string | null
+  submitted: boolean
+  result: AnswerResult | null
+}
+
+/** 答题结果 */
+export interface AnswerResult {
+  questionId: string
+  correct: boolean
+  score: number
+  correctAnswers: string[]
+  timeout: boolean
+}
+
 /** 与服务端同步的游戏状态 */
 export interface SyncedGameState {
   status: string
@@ -47,7 +63,8 @@ export function useSocket(opts: UseSocketOptions = {}) {
   let applyingRemote = false
 
   function connect() {
-    const url = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000'
+    // 优先使用环境变量，未设置则连接当前页面同源（开发时经 Vite 代理到后端）
+    const url = import.meta.env.VITE_SOCKET_URL || ''
 
     socket = io(url, {
       transports: ['websocket', 'polling'],
@@ -73,7 +90,7 @@ export function useSocket(opts: UseSocketOptions = {}) {
       nextTick(() => { applyingRemote = false })
     })
 
-    // 仅展示页监听远端广播更新
+    // 仅展示页 / 选手页监听远端广播更新
     if (syncRemote) {
       socket.on('state:updated', (state: SyncedGameState) => {
         applyingRemote = true
@@ -81,6 +98,19 @@ export function useSocket(opts: UseSocketOptions = {}) {
         nextTick(() => { applyingRemote = false })
       })
     }
+
+    // 选手端专属事件
+    socket.on('player:answerReceived', () => {
+      answerReceived.value = true
+    })
+
+    socket.on('player:answerResult', (result: AnswerResult) => {
+      answerResult.value = result
+    })
+
+    socket.on('player:myStatus', (status: PlayerMyStatus) => {
+      myStatus.value = status
+    })
   }
 
   /** 推送状态变更到服务端（管理页调用） */
@@ -104,6 +134,40 @@ export function useSocket(opts: UseSocketOptions = {}) {
     socket?.emit('display:clearQuestion')
   }
 
+  // ── 选手端功能 ──
+
+  /** 已提交确认（服务端收到答案后返回） */
+  const answerReceived = ref(false)
+
+  /** 答题结果（倒计时结束后服务端推送） */
+  const answerResult = ref<AnswerResult | null>(null)
+
+  /** 选手状态（页面刷新后从服务端恢复） */
+  const myStatus = ref<PlayerMyStatus | null>(null)
+
+  /** 选手注册：将 userId 关联到当前 socket */
+  function registerPlayer(userId: string) {
+    socket?.emit('player:register', userId)
+  }
+
+  /** 查询当前答题状态（页面刷新后恢复） */
+  function checkPlayerStatus(userId: string) {
+    socket?.emit('player:checkStatus', userId)
+  }
+
+  /** 选手提交答案 */
+  function submitAnswer(userId: string, questionId: string, answers: string[]) {
+    answerReceived.value = false
+    answerResult.value = null
+    socket?.emit('player:submitAnswer', { userId, questionId, answers })
+  }
+
+  /** 重置选手答题状态（新题目时调用） */
+  function resetPlayerAnswerState() {
+    answerReceived.value = false
+    answerResult.value = null
+  }
+
   function disconnect() {
     socket?.disconnect()
     socket = null
@@ -112,5 +176,8 @@ export function useSocket(opts: UseSocketOptions = {}) {
   onMounted(() => connect())
   onUnmounted(() => disconnect())
 
-  return { connected, serverState, pushState, resetState, selectRiskQuestion, clearQuestion }
+  return {
+    connected, serverState, pushState, resetState, selectRiskQuestion, clearQuestion,
+    registerPlayer, submitAnswer, resetPlayerAnswerState, answerReceived, answerResult, checkPlayerStatus, myStatus,
+  }
 }

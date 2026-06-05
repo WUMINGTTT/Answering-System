@@ -55,3 +55,7 @@ export const deleteUser = (id: string) =>
  */
 export const deleteAllUsers = () =>
   client.delete<ResBody<null>>('/users')
+
+/** 用户登出 */
+export const logout = () =>
+  client.post<ResBody<null>>('/users/logout')

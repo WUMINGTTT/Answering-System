@@ -122,6 +122,13 @@ export async function me(req: Request, res: Response): Promise<void> {
   ok(res, user, '当前用户获取成功');
 }
 
+/** POST /api/users/logout — 用户登出（清除 cookie） */
+export function logout(_req: Request, res: Response): void {
+  res.clearCookie('userId');
+  res.clearCookie('userRole');
+  ok(res, null, '已退出登录');
+}
+
 /** POST /api/users/login — 用户登录（用户名 + 密码） */
 export async function login(req: Request, res: Response): Promise<void> {
   const { username, password } = req.body;

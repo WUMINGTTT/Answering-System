@@ -9,6 +9,9 @@ router.post('/register', userController.register);
 /** POST /api/users/login — 用户登录 */
 router.post('/login', userController.login);
 
+/** POST /api/users/logout — 用户登出 */
+router.post('/logout', userController.logout);
+
 /** POST /api/users — 新增用户（管理员创建） */
 router.post('/', userController.create);
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, computed, onMounted } from 'vue'
+import { ref, watch, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSocket, type SyncedGameState, type AnswerResult } from '@/composables/useSocket'
 import { useDisplayCountdown } from '@/composables/useDisplayCountdown'
@@ -45,6 +45,17 @@ onMounted(async () => {
     }
   } catch { /* 稍后重试 */ }
   finally { userLoading.value = false }
+})
+
+// ── 禁用复制 / 右键 ──
+function preventCopy(e: Event) { e.preventDefault() }
+onMounted(() => {
+  document.addEventListener('copy', preventCopy)
+  document.addEventListener('contextmenu', preventCopy)
+})
+onUnmounted(() => {
+  document.removeEventListener('copy', preventCopy)
+  document.removeEventListener('contextmenu', preventCopy)
 })
 
 watch(connected, (val) => {
@@ -227,6 +238,9 @@ html, body {
   background: linear-gradient(160deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
   color: #fff;
   overscroll-behavior: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 /* ========== 主体区：flex-1 填满 ========== */

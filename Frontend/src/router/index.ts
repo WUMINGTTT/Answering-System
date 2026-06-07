@@ -40,11 +40,31 @@ const router = createRouter({
 
 const protectedRoutes = ['/player', '/admin', '/display']
 
+/** 角色可访问的路由 */
+const roleRouteMap: Record<string, string[]> = {
+  player: ['/player'],
+  admin: ['/admin', '/display'],
+}
+
+/** 角色默认页 */
+const roleDefaultPage: Record<string, string> = {
+  player: '/player',
+  admin: '/admin',
+}
+
 router.beforeEach(async (to) => {
-  // 访问受保护页面：未登录则重定向到登录页
+  // 访问受保护页面：未登录则重定向到登录页；已登录则校验角色权限
   if (protectedRoutes.includes(to.path)) {
     try {
-      await getMe()
+      const { data: res } = await getMe()
+      const role = res.data.role
+
+      // 检查角色是否有权访问目标路由
+      const allowedRoutes = roleRouteMap[role]
+      if (allowedRoutes && !allowedRoutes.includes(to.path)) {
+        ElMessage.warning('您没有权限访问该页面')
+        return { path: roleDefaultPage[role] || '/login', replace: true }
+      }
     } catch {
       ElMessage.error('请先登录')
       return { path: '/login', replace: true }

@@ -34,10 +34,6 @@ const userLoading = ref(true)
 onMounted(async () => {
   try {
     const { data: res } = await getMe()
-    if (res.data.role === 'admin') {
-      router.replace('/admin')
-      return
-    }
     user.value = res.data
     if (connected.value) {
       registerPlayer(res.data.id, res.data.nickname)

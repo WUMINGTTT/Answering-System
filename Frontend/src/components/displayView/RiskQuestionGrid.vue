@@ -20,15 +20,6 @@ defineProps<{
   usedIds: string[]
 }>()
 
-const emit = defineEmits<{
-  select: [question: Question, code: string]
-}>()
-
-function handleClick(q: Question, code: string, used: boolean) {
-  if (used) return
-  emit('select', q, code)
-}
-
 function scoreLetter(score: number): string {
   return SCORE_LETTER[score] || '?'
 }
@@ -43,7 +34,6 @@ function scoreLetter(score: number): string {
         class="risk-card"
         :class="{ 'is-used': usedIds.includes(q.id) }"
         :style="{ '--card-color': SCORE_COLOR[q.score] || '#909399' }"
-        @click="handleClick(q, codeMap.get(q.id) || '?', usedIds.includes(q.id))"
       >
         <!-- 代号 -->
         <span class="card-code">{{ codeMap.get(q.id) || '?' }}</span>
@@ -86,20 +76,9 @@ function scoreLetter(score: number): string {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+  cursor: default;
   overflow: hidden;
   user-select: none;
-}
-
-.risk-card:hover:not(.is-used) {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 20px color-mix(in srgb, var(--card-color) 40%, transparent);
-  background: rgba(255, 255, 255, 0.18);
-}
-
-.risk-card:active:not(.is-used) {
-  transform: scale(0.96);
 }
 
 /* 已使用状态 */

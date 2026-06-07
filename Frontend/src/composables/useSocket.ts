@@ -167,16 +167,6 @@ export function useSocket(opts: UseSocketOptions = {}) {
     socket?.emit('admin:requestSessions')
   }
 
-  /** 展示页：点击风险题卡片，选中题目 */
-  function selectRiskQuestion(questionId: string, riskCode: string) {
-    socket?.emit('display:selectRiskQuestion', { questionId, riskCode })
-  }
-
-  /** 展示页：返回风险题列表（清除当前题目） */
-  function clearQuestion() {
-    socket?.emit('display:clearQuestion')
-  }
-
   // ── 选手端功能 ──
 
   /** 已提交确认（服务端收到答案后返回） */
@@ -223,7 +213,7 @@ export function useSocket(opts: UseSocketOptions = {}) {
   onUnmounted(() => disconnect())
 
   return {
-    connected, serverState, pushState, resetState, selectRiskQuestion, clearQuestion,
+    connected, serverState, pushState, resetState,
     registerPlayer, submitAnswer, resetPlayerAnswerState, answerReceived, answerResult, checkPlayerStatus, myStatus, requestSessions, sessionData,
   }
 }

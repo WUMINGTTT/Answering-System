@@ -11,7 +11,7 @@ import DisplayRanking from '@/components/displayView/DisplayRanking.vue'
 import RiskQuestionGrid from '@/components/displayView/RiskQuestionGrid.vue'
 
 // ── Socket 同步 ──
-const { connected, serverState, selectRiskQuestion, clearQuestion } = useSocket({ syncRemote: true, pageType: 'display' })
+const { connected, serverState } = useSocket({ syncRemote: true, pageType: 'display' })
 
 // ── 倒计时（composable 封装 tick 逻辑） ──
 const {
@@ -87,16 +87,6 @@ async function fetchQuestions() {
 }
 onMounted(() => fetchQuestions())
 
-// ── 风险题卡片点击 → 展示题目 ──
-function onRiskCardSelect(q: Question, code: string) {
-  selectRiskQuestion(q.id, code)
-}
-
-// ── 返回风险题列表 ──
-function onBackToGrid() {
-  clearQuestion()
-}
-
 // ── 辅助计算 ──
 const isRiskPhase = computed(() => phase.value === 'risk')
 const showRiskGrid = computed(() => isRiskPhase.value && !currentQuestion.value)
@@ -162,7 +152,6 @@ const typeLabel = computed(() => {
             :questions="displayRiskQuestions"
             :code-map="riskCodeMap"
             :used-ids="usedRiskQuestionIds"
-            @select="onRiskCardSelect"
           />
         </template>
 
@@ -179,11 +168,6 @@ const typeLabel = computed(() => {
             :quick-answer-text="quickAnswerRemainingText"
             :answer-text="answerRemainingText"
           />
-
-          <!-- 风险题返回按钮 -->
-          <div v-if="isRiskPhase" class="back-bar">
-            <button class="back-btn" @click="onBackToGrid">← 返回列表</button>
-          </div>
 
           <!-- 题目卡片 -->
           <QuestionCard
@@ -304,27 +288,6 @@ const typeLabel = computed(() => {
   font-weight: 600;
   opacity: 0.8;
   letter-spacing: 4px;
-}
-
-/* ========== 返回按钮 ========== */
-.back-bar {
-  margin-bottom: 16px;
-}
-
-.back-btn {
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #fff;
-  font-size: 15px;
-  padding: 8px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.2s;
-  letter-spacing: 1px;
-}
-
-.back-btn:hover {
-  background: rgba(255, 255, 255, 0.22);
 }
 
 /* ========== 等待状态 ========== */

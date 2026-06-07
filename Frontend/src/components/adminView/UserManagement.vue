@@ -609,4 +609,39 @@ async function onDeleteAllScores() {
   color: var(--text-primary);
   line-height: 1.6;
 }
+
+/* ========== 响应式 ========== */
+@media (max-width: 900px) {
+  .control-bar {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .control-bar > .el-input {
+    width: 100% !important;
+    order: 3;
+  }
+
+  .control-actions {
+    width: 100%;
+    order: 4;
+    flex-wrap: wrap;
+  }
+
+  .control-actions .el-button {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 500px) {
+  .user-management {
+    padding: 12px;
+  }
+
+  .summary-bar {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
 </style>

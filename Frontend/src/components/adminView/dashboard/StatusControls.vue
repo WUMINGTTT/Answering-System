@@ -211,14 +211,33 @@ const QUESTION_STATUS_OPTIONS: StatusOption[] = [
 @media (max-width: 900px) {
   .status-layout {
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
   }
 
   .status-actions {
     padding-left: 0;
     border-left: none;
     border-top: 1px solid var(--border-base);
-    padding-top: 20px;
+    padding-top: 16px;
+  }
+}
+
+@media (max-width: 500px) {
+  .status-buttons--question {
+    grid-template-columns: 1fr;
+    margin-top: 12px;
+  }
+
+  .status-btn {
+    font-size: 13px;
+  }
+
+  .status-btn span {
+    display: none;
+  }
+
+  .status-btn .el-icon {
+    margin: 0;
   }
 }
 </style>

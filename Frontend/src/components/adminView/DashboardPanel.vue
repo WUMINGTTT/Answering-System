@@ -4,7 +4,8 @@ import StatusControls from './dashboard/StatusControls.vue'
 import CurrentQuestion from './dashboard/CurrentQuestion.vue'
 import PlayerList from './dashboard/PlayerList.vue'
 import QuestionList from './dashboard/QuestionList.vue'
-import { useSocket, type PlayerRanking } from '@/composables/useSocket'
+import PlayerStatusPanel from './dashboard/PlayerStatusPanel.vue'
+import { useSocket, type PlayerRanking, type PlayerAnswerStatus } from '@/composables/useSocket'
 import { useGameStatusStore } from '@/stores/gameStatus'
 import { useCountdownStore } from '@/stores/countdown'
 import { getAllUsers } from '@/api/users'
@@ -46,6 +47,7 @@ watch(serverState, (s) => {
   if (s.rankings) rankings.value = s.rankings
   if (s.usedRiskQuestionIds) usedRiskQuestionIds.value = [...s.usedRiskQuestionIds]
   if (s.riskScoreFilter !== undefined) riskScoreFilter.value = s.riskScoreFilter
+  if (s.playerStatuses) playerStatuses.value = [...s.playerStatuses]
 
   nextTick(() => { syncingRemote = false })
 })
@@ -105,6 +107,7 @@ watch(() => gameStore.status, (s) => {
 // ── 风险题数据（从 QuestionList 子组件接收） ──
 const riskScoreFilter = ref(0)
 const usedRiskQuestionIds = ref<string[]>([])
+const playerStatuses = ref<PlayerAnswerStatus[]>([])
 
 /** QuestionList 子组件通知风险题数据变化 */
 function onRiskDataChanged(payload: {
@@ -144,15 +147,18 @@ watch(syncPayload, (val) => {
     <!-- 状态控制 -->
     <StatusControls :connected="connected" @reset-used-questions="usedRiskQuestionIds = []" />
 
+    <!-- 必答题阶段：选手答题状态 -->
+    <PlayerStatusPanel />
+
     <!-- 当前题目 | 选手列表 | 题目列表 -->
     <el-row :gutter="16" class="list-row">
-      <el-col :xs="24" :sm="24" :md="4">
+      <el-col :xs="24" :sm="24" :md="6" :lg="5">
         <CurrentQuestion />
       </el-col>
-      <el-col :xs="24" :sm="12" :md="10">
+      <el-col :xs="24" :sm="12" :md="9" :lg="9">
         <PlayerList />
       </el-col>
-      <el-col :xs="24" :sm="12" :md="10">
+      <el-col :xs="24" :sm="12" :md="9" :lg="10">
         <QuestionList @risk-data-changed="onRiskDataChanged" />
       </el-col>
     </el-row>
@@ -179,24 +185,38 @@ watch(syncPayload, (val) => {
   height: 100%;
 }
 
-/* 小屏堆叠 */
-@media (max-width: 992px) {
+/* 平板及以下：纵向堆叠，列表区限制高度内部滚动 */
+@media (max-width: 991px) {
+  .dashboard {
+    height: auto;
+  }
+
   .list-row {
+    flex: none;
     min-height: auto;
   }
 
   .list-row :deep(.el-col) {
     overflow: visible;
+    height: auto;
   }
 
   .list-row .el-col {
     flex: 0 0 100%;
     max-width: 100%;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
   }
 
   .list-row .el-col:last-child {
     margin-bottom: 0;
+  }
+
+  /* 列表区限制高度，内部滚动（当前题目卡片除外） */
+  .list-row .el-col {
+    max-height: 360px;
+  }
+  .list-row .el-col:first-child {
+    max-height: none;
   }
 }
 </style>

@@ -50,6 +50,7 @@ declare module 'vue' {
     LoginForm: typeof import('./src/components/loginView/LoginForm.vue')['default']
     PlayerInfoBar: typeof import('./src/components/playerView/PlayerInfoBar.vue')['default']
     PlayerList: typeof import('./src/components/adminView/dashboard/PlayerList.vue')['default']
+    PlayerStatusPanel: typeof import('./src/components/adminView/dashboard/PlayerStatusPanel.vue')['default']
     QuestionCard: typeof import('./src/components/displayView/QuestionCard.vue')['default']
     QuestionList: typeof import('./src/components/adminView/dashboard/QuestionList.vue')['default']
     QuestionManagement: typeof import('./src/components/adminView/QuestionManagement.vue')['default']

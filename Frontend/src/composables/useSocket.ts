@@ -51,6 +51,14 @@ export interface SyncedGameState {
   riskScoreFilter: number
   usedRiskQuestionIds: string[]
   serverTime: number
+  playerStatuses: PlayerAnswerStatus[]
+}
+
+/** 选手答题状态 */
+export interface PlayerAnswerStatus {
+  userId: string
+  nickname: string
+  status: 'waiting' | 'answering' | 'submitted'
 }
 
 interface UseSocketOptions {

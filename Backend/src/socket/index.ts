@@ -1,6 +1,6 @@
 import type { Server as HttpServer } from 'node:http';
 import { Server as SocketIOServer } from 'socket.io';
-import { getGameState, updateGameState, resetGameState } from './gameState.js';
+import { getGameState, updateGameState, resetGameState, updatePlayerStatuses } from './gameState.js';
 import { getAllQuestions } from '../data-access/questionDao.js';
 import { addScore } from '../data-access/scoreDao.js';
 
@@ -9,6 +9,9 @@ let io: SocketIOServer | null = null;
 /** userId → socket.id 映射，用于向指定选手推送结果 */
 const playerSockets = new Map<string, string>();
 
+/** userId → nickname 映射 */
+const playerNicknames = new Map<string, string>();
+
 /** 页面会话追踪：socket.id → { pageType, userId?, nickname? } */
 interface SessionInfo {
   pageType: 'home' | 'login' | 'admin' | 'display' | 'player';
@@ -16,6 +19,12 @@ interface SessionInfo {
   nickname?: string;
 }
 const pageSessions = new Map<string, SessionInfo>();
+
+/** 获取状态并注入选手答题状态 */
+function getStateWithStatuses() {
+  updatePlayerStatuses(playerSockets, playerNicknames);
+  return getGameState();
+}
 
 /** 向所有管理页推送会话状态更新 */
 function broadcastSessions() {
@@ -77,6 +86,7 @@ export function initSocket(server: HttpServer): SocketIOServer {
     // ── 选手注册（关联 userId 与 socket，并更新会话信息） ──
     socket.on('player:register', (userId: string, nickname?: string) => {
       playerSockets.set(userId, socket.id);
+      if (nickname) playerNicknames.set(userId, nickname);
       // 更新会话中的选手信息
       const existing = pageSessions.get(socket.id);
       if (existing) {
@@ -115,7 +125,7 @@ export function initSocket(server: HttpServer): SocketIOServer {
 
     // ── 客户端请求当前状态（页面刷新 / 首次打开） ──
     socket.on('client:requestState', () => {
-      const state = getGameState();
+      const state = getStateWithStatuses();
       socket.emit('state:current', state);
     });
 
@@ -132,20 +142,23 @@ export function initSocket(server: HttpServer): SocketIOServer {
         evaluateAnswers(prev.currentQuestion.id, prev);
       }
 
-      const updated = updateGameState(patch);
-      io?.emit('state:updated', updated);
+      updateGameState(patch);
+      const stateWithStatus = getStateWithStatuses();
+      io?.emit('state:updated', stateWithStatus);
     });
 
     // ── 管理员重置游戏状态 ──
     socket.on('admin:resetState', () => {
-      const state = resetGameState();
+      resetGameState();
+      const state = getStateWithStatuses();
       io?.emit('state:updated', state);
     });
 
     // ── 展示页清除当前题目（返回风险题列表） ──
     socket.on('display:clearQuestion', () => {
-      const updated = updateGameState({ currentQuestion: null, currentRiskCode: null, showAnswer: false });
-      io?.emit('state:updated', updated);
+      updateGameState({ currentQuestion: null, currentRiskCode: null, showAnswer: false });
+      const state = getStateWithStatuses();
+      io?.emit('state:updated', state);
     });
 
     // ── 展示页点击风险题卡片 → 选中题目并标记为已使用 ──
@@ -160,13 +173,14 @@ export function initSocket(server: HttpServer): SocketIOServer {
         usedIds.push(payload.questionId);
       }
 
-      const updated = updateGameState({
+      updateGameState({
         currentQuestion: question,
         currentRiskCode: payload.riskCode,
         showAnswer: false,
         usedRiskQuestionIds: usedIds,
       });
-      io?.emit('state:updated', updated);
+      const state = getStateWithStatuses();
+      io?.emit('state:updated', state);
     });
 
     // ── 选手提交答案 ──
@@ -185,8 +199,10 @@ export function initSocket(server: HttpServer): SocketIOServer {
 
       updateGameState({ pendingAnswers: { ...current.pendingAnswers } });
 
-      // 告知选手已收到提交
+      // 告知选手已收到提交，并广播更新状态到管理页
       socket.emit('player:answerReceived', { questionId: payload.questionId });
+      const state = getStateWithStatuses();
+      io?.emit('state:updated', state);
     });
 
     // ── 断开清理 ──

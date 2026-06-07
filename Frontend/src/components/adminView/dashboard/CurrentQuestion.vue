@@ -141,6 +141,7 @@ function categoryTagType(cat: string) {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-width: 200px;
 }
 
 .current-card :deep(.el-card__header) {

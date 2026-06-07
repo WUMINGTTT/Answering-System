@@ -10,6 +10,13 @@ export interface PlayerRanking {
   totalScore: number;
 }
 
+/** 选手答题状态 */
+export interface PlayerAnswerStatus {
+  userId: string;
+  nickname: string;
+  status: 'waiting' | 'answering' | 'submitted';
+}
+
 /** 存储在服务端、跨页面同步的游戏状态 */
 export interface GameState {
   status: GameStatus;
@@ -33,6 +40,8 @@ export interface GameState {
   answerResults: Record<string, Record<string, { correct: boolean; score: number; submitted: boolean; timeout: boolean }>>;
   /** 服务端时间戳（用于客户端校准倒计时时钟偏差） */
   serverTime: number;
+  /** 当前题目下的选手答题状态（必答题阶段） */
+  playerStatuses: PlayerAnswerStatus[];
 }
 
 /** 默认游戏状态 */
@@ -54,6 +63,7 @@ function createDefaultState(): GameState {
     pendingAnswers: {},
     answerResults: {},
     serverTime: Date.now(),
+    playerStatuses: [],
   };
 }
 
@@ -74,4 +84,31 @@ export function updateGameState(patch: Partial<GameState>): GameState {
 export function resetGameState(): GameState {
   state = createDefaultState();
   return getGameState();
+}
+
+/** 更新选手答题状态（仅在线选手，由 socket 层在广播前调用） */
+export function updatePlayerStatuses(
+  onlinePlayers: Map<string, string>,
+  knownPlayers: Map<string, string>,
+): void {
+  const questionId = state.currentQuestion?.id;
+  const pending = questionId ? (state.pendingAnswers[questionId] || {}) : {};
+  const isCounting = state.isAnswerCounting;
+
+  const statuses: PlayerAnswerStatus[] = [];
+
+  for (const [userId] of onlinePlayers.entries()) {
+    const nickname = knownPlayers.get(userId) || userId;
+    const hasSubmitted = !!pending[userId];
+
+    if (hasSubmitted) {
+      statuses.push({ userId, nickname, status: 'submitted' });
+    } else if (isCounting) {
+      statuses.push({ userId, nickname, status: 'answering' });
+    } else {
+      statuses.push({ userId, nickname, status: 'waiting' });
+    }
+  }
+
+  state.playerStatuses = statuses;
 }

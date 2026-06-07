@@ -190,6 +190,15 @@ watch(() => theme.isDark, (val) => {
 .el-main {
   background: var(--bg-page);
   padding: 24px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* ========== 响应式 ========== */
+@media (max-width: 768px) {
+  .el-main {
+    padding: 12px;
+  }
 }
 
 /* ========== 侧边栏底部（主题切换） ========== */

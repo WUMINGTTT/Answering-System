@@ -276,10 +276,14 @@ const pageCards: PageCardDef[] = [
 
 /* ════ 响应式 ════ */
 @media (max-width: 700px) {
+  .session-dashboard {
+    gap: 14px;
+  }
   .stat-row {
     grid-template-columns: repeat(3, 1fr);
   }
   .stat-item:nth-child(3n) { border-right: none; }
+  .stat-item:nth-child(n+4) { border-top: 1px solid var(--border-light); }
 }
 
 @media (max-width: 420px) {
@@ -287,5 +291,6 @@ const pageCards: PageCardDef[] = [
     grid-template-columns: repeat(2, 1fr);
   }
   .stat-item:nth-child(2n) { border-right: none; }
+  .stat-item:nth-child(n+3) { border-top: 1px solid var(--border-light); }
 }
 </style>

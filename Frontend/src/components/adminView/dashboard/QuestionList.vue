@@ -106,6 +106,11 @@ function toggleCurrentQuestion(q: Question) {
     store.setCurrentQuestion(null)
     ElMessage.info('已取消当前展示题目')
   } else {
+    // 风险题阶段：已有选中题目时，需先取消再选新题
+    if (store.status === 'risk' && store.currentQuestion) {
+      ElMessage.warning('请先取消选择当前题目，再选择新题目')
+      return
+    }
     const rCode = riskCodeMap.value.get(q.id)
     store.setCurrentQuestion(q, rCode)
     const label = rCode ? `「${rCode}」` : `「${q.stem.slice(0, 20)}...」`

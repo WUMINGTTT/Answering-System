@@ -530,4 +530,38 @@ onUnmounted(() => {
   color: var(--text-primary);
   line-height: 1.6;
 }
+
+/* ========== 响应式 ========== */
+@media (max-width: 900px) {
+  .control-bar {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .control-bar > .el-input,
+  .control-bar > .el-select {
+    width: 100% !important;
+  }
+
+  .control-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .control-actions .el-button {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 500px) {
+  .question-management {
+    padding: 12px;
+  }
+
+  .summary-bar {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
 </style>

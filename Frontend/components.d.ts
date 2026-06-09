@@ -15,6 +15,7 @@ declare module 'vue' {
     AnswerOptions: typeof import('./src/components/playerView/AnswerOptions.vue')['default']
     AnswerReveal: typeof import('./src/components/displayView/AnswerReveal.vue')['default']
     BuzzButton: typeof import('./src/components/playerView/BuzzButton.vue')['default']
+    BuzzPlayerList: typeof import('./src/components/adminView/dashboard/BuzzPlayerList.vue')['default']
     BuzzResultPanel: typeof import('./src/components/displayView/BuzzResultPanel.vue')['default']
     CountdownPanel: typeof import('./src/components/adminView/dashboard/CountdownPanel.vue')['default']
     CountdownTimers: typeof import('./src/components/displayView/CountdownTimers.vue')['default']

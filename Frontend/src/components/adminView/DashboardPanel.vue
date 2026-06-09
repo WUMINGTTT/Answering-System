@@ -5,6 +5,7 @@ import CurrentQuestion from './dashboard/CurrentQuestion.vue'
 import PlayerList from './dashboard/PlayerList.vue'
 import QuestionList from './dashboard/QuestionList.vue'
 import PlayerStatusPanel from './dashboard/PlayerStatusPanel.vue'
+import BuzzPlayerList from './dashboard/BuzzPlayerList.vue'
 import { useSocket, type PlayerRanking, type PlayerAnswerStatus, type BuzzRecord } from '@/composables/useSocket'
 import { useGameStatusStore } from '@/stores/gameStatus'
 import { useCountdownStore } from '@/stores/countdown'
@@ -84,6 +85,14 @@ watch(() => gameStore.currentQuestion, () => {
 // ── 排名数据 ──
 const rankings = ref<PlayerRanking[]>([])
 
+const playerListRef = ref<InstanceType<typeof PlayerList>>()
+
+/** 得分变动后同步刷新排名和选手列表 */
+function onScoreAdded() {
+  fetchRankings()
+  playerListRef.value?.fetchUsers()
+}
+
 /** 从 API 拉取选手列表并计算排名 */
 async function fetchRankings() {
   try {
@@ -154,7 +163,17 @@ watch(syncPayload, (val) => {
     <StatusControls :connected="connected" @reset-used-questions="usedRiskQuestionIds = []" />
 
     <!-- 必答题阶段：选手答题状态 -->
-    <PlayerStatusPanel />
+    <PlayerStatusPanel v-if="gameStore.status === 'required'" />
+
+    <!-- 抢答题阶段：选手抢答列表 -->
+    <BuzzPlayerList
+      v-if="gameStore.status === 'quick-answer'"
+      :records="buzzRecordsMap[gameStore.currentQuestion?.id || ''] || []"
+      :winner="buzzWinner"
+      :buzz-open="buzzOpen"
+      :current-question="gameStore.currentQuestion"
+      @score-added="onScoreAdded"
+    />
 
     <!-- 当前题目 | 选手列表 | 题目列表 -->
     <el-row :gutter="16" class="list-row">
@@ -162,7 +181,7 @@ watch(syncPayload, (val) => {
         <CurrentQuestion />
       </el-col>
       <el-col :xs="24" :sm="12" :md="9" :lg="9">
-        <PlayerList />
+        <PlayerList ref="playerListRef" />
       </el-col>
       <el-col :xs="24" :sm="12" :md="9" :lg="10">
         <QuestionList @risk-data-changed="onRiskDataChanged" />

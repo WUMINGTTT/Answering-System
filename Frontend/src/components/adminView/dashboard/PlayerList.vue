@@ -176,6 +176,8 @@ function formatTime(ts: number): string {
 onMounted(() => {
   fetchUsers()
 })
+
+defineExpose({ fetchUsers })
 </script>
 
 <template>

@@ -9,6 +9,8 @@ import QuestionCard from '@/components/displayView/QuestionCard.vue'
 import AnswerReveal from '@/components/displayView/AnswerReveal.vue'
 import DisplayRanking from '@/components/displayView/DisplayRanking.vue'
 import RiskQuestionGrid from '@/components/displayView/RiskQuestionGrid.vue'
+import BuzzResultPanel from '@/components/displayView/BuzzResultPanel.vue'
+import type { BuzzRecord } from '@/composables/useSocket'
 
 // ── Socket 同步 ──
 const { connected, serverState } = useSocket({ syncRemote: true, pageType: 'display' })
@@ -37,6 +39,9 @@ const rankings = ref<PlayerRanking[]>([])
 const allQuestions = ref<Question[]>([])
 const riskScoreFilter = ref(0)
 const usedRiskQuestionIds = ref<string[]>([])
+const buzzRecordsMap = ref<Record<string, BuzzRecord[]>>({})
+const buzzWinner = ref<{ userId: string; nickname: string; timestamp: number } | null>(null)
+const buzzOpen = ref(false)
 
 /** 分值 → 字母代号 */
 const SCORE_LETTER: Record<number, string> = { 10: 'A', 20: 'B', 30: 'C' }
@@ -75,6 +80,9 @@ watch(serverState, (s: SyncedGameState | null) => {
   rankings.value = s.rankings || []
   if (s.riskScoreFilter !== undefined) riskScoreFilter.value = s.riskScoreFilter
   if (s.usedRiskQuestionIds) usedRiskQuestionIds.value = [...s.usedRiskQuestionIds]
+  if (s.buzzRecords) buzzRecordsMap.value = { ...s.buzzRecords }
+  buzzWinner.value = s.buzzWinner || null
+  buzzOpen.value = s.buzzOpen || false
   syncFromServer(s)
 })
 
@@ -117,6 +125,12 @@ const typeLabel = computed(() => {
     subjective: '主观题',
   }
   return map[currentQuestion.value.type] || ''
+})
+
+/** 当前题目的抢答记录 */
+const currentBuzzRecords = computed<BuzzRecord[]>(() => {
+  if (!currentQuestion.value) return []
+  return buzzRecordsMap.value[currentQuestion.value.id] || []
 })
 </script>
 
@@ -179,6 +193,15 @@ const typeLabel = computed(() => {
           <AnswerReveal
             v-if="showAnswer"
             :answers="currentQuestion.answers"
+          />
+
+          <!-- 抢答结果（抢答题阶段实时展示） -->
+          <BuzzResultPanel
+            v-if="phase === 'quick-answer'"
+            :records="currentBuzzRecords"
+            :winner="buzzWinner"
+            :is-counting="isQuickAnswerCounting"
+            :buzz-open="buzzOpen"
           />
         </template>
 

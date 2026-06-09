@@ -9,6 +9,7 @@ import { getMe } from '@/api/users'
 import PlayerInfoBar from '@/components/playerView/PlayerInfoBar.vue'
 import AnnouncementPanel from '@/components/playerView/AnnouncementPanel.vue'
 import AnswerOptions from '@/components/playerView/AnswerOptions.vue'
+import BuzzButton from '@/components/playerView/BuzzButton.vue'
 
 const router = useRouter()
 
@@ -22,10 +23,19 @@ const {
   answerResult,
   checkPlayerStatus,
   myStatus,
+  sendBuzz,
+  buzzResult,
 } = useSocket({ syncRemote: true, pageType: 'player' })
 
 // ── 倒计时 ──
-const { answerRemainingText, syncFromServer } = useDisplayCountdown()
+const {
+  answerRemainingText,
+  quickAnswerRemainingText,
+  quickAnswerRemainingDecimal,
+  isQuickAnswerCounting,
+  quickAnswerRemaining,
+  syncFromServer,
+} = useDisplayCountdown()
 
 // ── 当前用户 ──
 const user = ref<User | null>(null)
@@ -65,6 +75,8 @@ watch(connected, (val) => {
 const currentQuestion = ref<Question | null>(null)
 const isAnswerCounting = ref(false)
 const phase = ref('')
+const buzzOpen = ref(false)
+const buzzWinner = ref<{ userId: string; nickname: string; timestamp: number } | null>(null)
 
 watch(serverState, (s: SyncedGameState | null) => {
   if (!s) return
@@ -75,6 +87,8 @@ watch(serverState, (s: SyncedGameState | null) => {
   currentQuestion.value = s.currentQuestion
   isAnswerCounting.value = s.isAnswerCounting
   phase.value = s.status
+  buzzOpen.value = s.buzzOpen || false
+  buzzWinner.value = s.buzzWinner || null
   syncFromServer(s)
 })
 
@@ -117,6 +131,21 @@ watch(isAnswerCounting, (val, oldVal) => {
   }
 })
 
+// 抢答开放时（倒计时开始）：重置之前的抢答结果，允许重新抢答
+watch(buzzOpen, (val) => {
+  if (val) {
+    buzzResult.value = null
+  }
+})
+
+// 抢答倒计时重新开始时也必须清空抢答结果
+// （buzzOpen 可能未变化，导致上面 watch 不触发）
+watch(isQuickAnswerCounting, (val) => {
+  if (val) {
+    buzzResult.value = null
+  }
+})
+
 const canAnswer = computed(() =>
   phase.value === 'required' && currentQuestion.value !== null && isAnswerCounting.value
 )
@@ -128,6 +157,22 @@ const showQuestion = computed(() =>
 const showResult = computed(() =>
   phase.value === 'required' && currentQuestion.value !== null && answerResult.value !== null
 )
+
+// ── 抢答题相关 ──
+/** 是否展示抢答题界面 */
+const showBuzzQuestion = computed(() =>
+  phase.value === 'quick-answer' && currentQuestion.value !== null
+)
+
+/** 是否可以抢答（抢答开放 或 倒计时中可提前按） */
+const canBuzz = computed(() =>
+  phase.value === 'quick-answer' && currentQuestion.value !== null
+)
+
+function handleBuzz() {
+  if (!user.value || !currentQuestion.value) return
+  sendBuzz(user.value.id, currentQuestion.value.id)
+}
 
 function onSubmitAnswer(answers: string[]) {
   if (!user.value || !currentQuestion.value) return
@@ -174,7 +219,7 @@ const typeLabel = computed(() => {
         </div>
       </div>
 
-      <!-- ======== 答题区 ======== -->
+      <!-- ======== 答题区（必答题） ======== -->
       <div v-else-if="showQuestion" class="question-area">
         <div class="q-header">
           <span class="q-type">{{ typeLabel }}</span>
@@ -198,6 +243,28 @@ const typeLabel = computed(() => {
           :can-answer="canAnswer && !hasSubmitted"
           :submitted="hasSubmitted"
           @submit="onSubmitAnswer"
+        />
+      </div>
+
+      <!-- ======== 抢答区（抢答题） ======== -->
+      <div v-else-if="showBuzzQuestion" class="buzz-area-wrapper">
+        <div class="q-header">
+          <span class="q-type buzz-type">抢答题</span>
+          <span class="q-score">{{ currentQuestion!.score }} 分</span>
+        </div>
+        <div class="q-stem">{{ currentQuestion!.stem }}</div>
+
+        <BuzzButton
+          :is-counting="isQuickAnswerCounting"
+          :remaining="quickAnswerRemaining"
+          :remaining-text="quickAnswerRemainingText"
+          :remaining-decimal="quickAnswerRemainingDecimal"
+          :buzz-open="buzzOpen"
+          :has-winner="buzzWinner !== null"
+          :winner-nickname="buzzWinner?.nickname || ''"
+          :buzz-result="buzzResult"
+          :can-buzz="canBuzz"
+          @buzz="handleBuzz"
         />
       </div>
 
@@ -250,7 +317,8 @@ html, body {
 }
 
 /* ========== 答题区 ========== */
-.question-area {
+.question-area,
+.buzz-area-wrapper {
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -276,6 +344,11 @@ html, body {
   border-radius: 5px;
   color: #409eff;
   font-weight: 500;
+}
+
+.q-type.buzz-type {
+  background: rgba(230, 162, 60, 0.2);
+  color: #e6a23c;
 }
 
 .q-score {

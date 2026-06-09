@@ -142,6 +142,43 @@ export function initSocket(server: HttpServer): SocketIOServer {
         evaluateAnswers(prev.currentQuestion.id, prev);
       }
 
+      // 抢答题：检测抢答倒计时开始 → 按钮解禁，清空上一轮记录
+      if (patch.isQuickAnswerCounting === true && prev.isQuickAnswerCounting === false) {
+        (patch as Record<string, unknown>).buzzOpen = true;
+        (patch as Record<string, unknown>).buzzWinner = null;
+        (patch as Record<string, unknown>).buzzRecords = {};
+      }
+
+      // 抢答题：检测抢答倒计时被手动停止（非自然结束） → 关闭抢答
+      if (
+        prev.isQuickAnswerCounting === true &&
+        patch.isQuickAnswerCounting === false &&
+        prev.currentQuestion?.category === 'quick-answer'
+      ) {
+        const isNaturalExpiry =
+          prev.quickAnswerEndTime !== null &&
+          Date.now() >= prev.quickAnswerEndTime - 2000; // 2s 容差
+        if (!isNaturalExpiry) {
+          // 手动停止：关闭抢答
+          (patch as Record<string, unknown>).buzzOpen = false;
+        }
+        // 自然结束：保持 buzzOpen = true，选手可继续抢答
+      }
+
+      // 题目切换时清空抢答状态（不留存）
+      const newQuestion = patch.currentQuestion as import('../types/question.js').Question | undefined | null;
+      if (newQuestion !== undefined && newQuestion?.id !== prev.currentQuestion?.id) {
+        (patch as Record<string, unknown>).buzzOpen = false;
+        (patch as Record<string, unknown>).buzzWinner = null;
+        (patch as Record<string, unknown>).buzzRecords = {};
+      }
+      // 阶段切换离开抢答题时清空抢答状态
+      if (patch.status !== undefined && patch.status !== prev.status && patch.status !== 'quick-answer') {
+        (patch as Record<string, unknown>).buzzOpen = false;
+        (patch as Record<string, unknown>).buzzWinner = null;
+        (patch as Record<string, unknown>).buzzRecords = {};
+      }
+
       updateGameState(patch);
       const stateWithStatus = getStateWithStatuses();
       io?.emit('state:updated', stateWithStatus);
@@ -156,7 +193,7 @@ export function initSocket(server: HttpServer): SocketIOServer {
 
     // ── 展示页清除当前题目（返回风险题列表） ──
     socket.on('display:clearQuestion', () => {
-      updateGameState({ currentQuestion: null, currentRiskCode: null, showAnswer: false });
+      updateGameState({ currentQuestion: null, currentRiskCode: null, showAnswer: false, buzzOpen: false, buzzWinner: null, buzzRecords: {} });
       const state = getStateWithStatuses();
       io?.emit('state:updated', state);
     });
@@ -179,6 +216,66 @@ export function initSocket(server: HttpServer): SocketIOServer {
         showAnswer: false,
         usedRiskQuestionIds: usedIds,
       });
+      const state = getStateWithStatuses();
+      io?.emit('state:updated', state);
+    });
+
+    // ── 选手抢答 ──
+    socket.on('player:buzz', (payload: { userId: string; questionId: string }) => {
+      const current = getGameState();
+
+      // 仅在抢答题阶段接受抢答
+      if (current.status !== 'quick-answer') return;
+      if (!current.currentQuestion || current.currentQuestion.id !== payload.questionId) return;
+
+      // 拒绝重复抢答（防止刷新页面绕过前端限制）
+      const qId = payload.questionId;
+      const alreadyBuzzed = (current.buzzRecords[qId] || []).some(
+        (r) => r.userId === payload.userId
+      );
+      if (alreadyBuzzed) return;
+
+      const now = Date.now();
+      const nickname = playerNicknames.get(payload.userId) || payload.userId;
+
+      // 判断是否提前抢答（倒计时尚未结束）
+      const early = current.isQuickAnswerCounting ||
+        (current.quickAnswerEndTime !== null && now < current.quickAnswerEndTime);
+
+      // 有效抢答：倒计时已结束 + 抢答开放（所有选手均可抢答，不限制人数）
+      const valid = !early && current.buzzOpen;
+
+      const buzzRecord = {
+        userId: payload.userId,
+        nickname,
+        timestamp: now,
+        early,
+      };
+
+      // 记录抢答事件
+      const records = [...(current.buzzRecords[qId] || []), buzzRecord];
+      const patch: Record<string, unknown> = {
+        buzzRecords: { ...current.buzzRecords, [qId]: records },
+      };
+
+      // 首个有效抢答记为获胜者，但不关闭抢答（其他选手仍可抢答）
+      if (valid && !current.buzzWinner) {
+        patch.buzzWinner = { userId: payload.userId, nickname, timestamp: now };
+      }
+
+      updateGameState(patch);
+
+      // 告知选手抢答结果
+      socket.emit('player:buzzResult', {
+        questionId: payload.questionId,
+        valid,
+        early,
+        winner: valid
+          ? (current.buzzWinner || { userId: payload.userId, nickname })
+          : current.buzzWinner,
+      });
+
+      // 广播更新状态
       const state = getStateWithStatuses();
       io?.emit('state:updated', state);
     });

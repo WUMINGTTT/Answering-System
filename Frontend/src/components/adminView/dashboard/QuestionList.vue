@@ -3,7 +3,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { QuestionFilled, Search } from '@element-plus/icons-vue'
 import { getAllQuestions } from '@/api/questions'
 import type { Question } from '@/types/question'
-import { useGameStatusStore, QUESTION_PHASES } from '@/stores/gameStatus'
+import { useGameStatusStore, QUESTION_PHASES, type GameStatus } from '@/stores/gameStatus'
 
 const store = useGameStatusStore()
 
@@ -110,6 +110,11 @@ function toggleCurrentQuestion(q: Question) {
     if (store.status === 'risk' && store.currentQuestion) {
       ElMessage.warning('请先取消选择当前题目，再选择新题目')
       return
+    }
+    // 根据题目类别自动切换游戏阶段（确保选手端第一时间看到题目）
+    const phase = q.category as GameStatus
+    if (store.status !== phase) {
+      store.status = phase
     }
     const rCode = riskCodeMap.value.get(q.id)
     store.setCurrentQuestion(q, rCode)

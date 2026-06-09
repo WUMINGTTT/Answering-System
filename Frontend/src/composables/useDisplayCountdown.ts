@@ -9,10 +9,14 @@ export function useDisplayCountdown() {
   const isQuickAnswerCounting = ref(false)
   const answerRemaining = ref(0)
   const quickAnswerRemaining = ref(0)
+  /** 抢答倒计时精确剩余秒数（浮点数，用于小数点后两位展示） */
+  const quickAnswerRemainingRaw = ref(0)
 
   // ── 格式化 ──
   const answerRemainingText = computed(() => formatTime(answerRemaining.value))
   const quickAnswerRemainingText = computed(() => formatTime(quickAnswerRemaining.value))
+  /** 抢答倒计时保留小数点后两位（如 5.00, 3.27） */
+  const quickAnswerRemainingDecimal = computed(() => formatDecimal(quickAnswerRemainingRaw.value))
   const showAnswerTimer = computed(() => isAnswerCounting.value)
   const showQuickAnswerTimer = computed(() => isQuickAnswerCounting.value)
 
@@ -20,6 +24,12 @@ export function useDisplayCountdown() {
     if (s <= 0) return '00:00'
     const m = Math.floor(s / 60)
     return `${String(m).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`
+  }
+
+  /** 秒数 → 保留两位小数的秒（如 5.00, 3.25） */
+  function formatDecimal(s: number): string {
+    if (s <= 0) return '0.00'
+    return s.toFixed(2)
   }
 
   // ── 本地 tick：基于服务端初始剩余时间 + 本地流逝时间，不依赖绝对时间戳 ──
@@ -43,6 +53,7 @@ export function useDisplayCountdown() {
       initialQuickRemaining = Math.max(0, (s.quickAnswerEndTime - s.serverTime) / 1000)
       tickStart.value = Date.now()
       quickAnswerRemaining.value = Math.ceil(initialQuickRemaining)
+      quickAnswerRemainingRaw.value = initialQuickRemaining
     }
   }
 
@@ -59,10 +70,13 @@ export function useDisplayCountdown() {
       }
     }
     if (isQuickAnswerCounting.value) {
-      quickAnswerRemaining.value = Math.max(0, Math.ceil(initialQuickRemaining - elapsed))
-      if (initialQuickRemaining - elapsed <= 0) {
+      const rawRemaining = Math.max(0, initialQuickRemaining - elapsed)
+      quickAnswerRemaining.value = Math.ceil(rawRemaining)
+      quickAnswerRemainingRaw.value = rawRemaining
+      if (rawRemaining <= 0) {
         isQuickAnswerCounting.value = false
         quickAnswerRemaining.value = 0
+        quickAnswerRemainingRaw.value = 0
       }
     }
   }
@@ -71,7 +85,7 @@ export function useDisplayCountdown() {
     () => isAnswerCounting.value || isQuickAnswerCounting.value,
     (active) => {
       if (active) {
-        if (!timerHandle) timerHandle = setInterval(tick, 250)
+        if (!timerHandle) timerHandle = setInterval(tick, 100)
       } else {
         if (timerHandle) { clearInterval(timerHandle); timerHandle = null }
       }
@@ -92,6 +106,7 @@ export function useDisplayCountdown() {
     quickAnswerRemaining,
     answerRemainingText,
     quickAnswerRemainingText,
+    quickAnswerRemainingDecimal,
     showAnswerTimer,
     showQuickAnswerTimer,
     syncFromServer,

@@ -5,7 +5,7 @@ import CurrentQuestion from './dashboard/CurrentQuestion.vue'
 import PlayerList from './dashboard/PlayerList.vue'
 import QuestionList from './dashboard/QuestionList.vue'
 import PlayerStatusPanel from './dashboard/PlayerStatusPanel.vue'
-import { useSocket, type PlayerRanking, type PlayerAnswerStatus } from '@/composables/useSocket'
+import { useSocket, type PlayerRanking, type PlayerAnswerStatus, type BuzzRecord } from '@/composables/useSocket'
 import { useGameStatusStore } from '@/stores/gameStatus'
 import { useCountdownStore } from '@/stores/countdown'
 import { getAllUsers } from '@/api/users'
@@ -15,7 +15,7 @@ const gameStore = useGameStatusStore()
 const countdownStore = useCountdownStore()
 
 // ── Socket 同步（管理页不监听远端广播，避免回环） ──
-const { connected, serverState, pushState } = useSocket({ syncRemote: false, pageType: 'admin' })
+const { connected, serverState, pushState } = useSocket({ syncRemote: true, pageType: 'admin' })
 
 /** 防回环：正在从远端同步时跳过本地推送 */
 let syncingRemote = false
@@ -48,6 +48,9 @@ watch(serverState, (s) => {
   if (s.usedRiskQuestionIds) usedRiskQuestionIds.value = [...s.usedRiskQuestionIds]
   if (s.riskScoreFilter !== undefined) riskScoreFilter.value = s.riskScoreFilter
   if (s.playerStatuses) playerStatuses.value = [...s.playerStatuses]
+  if (s.buzzOpen !== undefined) buzzOpen.value = s.buzzOpen
+  if (s.buzzWinner !== undefined) buzzWinner.value = s.buzzWinner
+  if (s.buzzRecords) buzzRecordsMap.value = { ...s.buzzRecords }
 
   nextTick(() => { syncingRemote = false })
 })
@@ -108,6 +111,9 @@ watch(() => gameStore.status, (s) => {
 const riskScoreFilter = ref(0)
 const usedRiskQuestionIds = ref<string[]>([])
 const playerStatuses = ref<PlayerAnswerStatus[]>([])
+const buzzOpen = ref(false)
+const buzzWinner = ref<{ userId: string; nickname: string; timestamp: number } | null>(null)
+const buzzRecordsMap = ref<Record<string, BuzzRecord[]>>({})
 
 /** QuestionList 子组件通知风险题数据变化 */
 function onRiskDataChanged(payload: {

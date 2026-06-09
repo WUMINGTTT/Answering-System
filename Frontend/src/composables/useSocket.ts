@@ -52,6 +52,9 @@ export interface SyncedGameState {
   usedRiskQuestionIds: string[]
   serverTime: number
   playerStatuses: PlayerAnswerStatus[]
+  buzzRecords: Record<string, BuzzRecord[]>
+  buzzWinner: { userId: string; nickname: string; timestamp: number } | null
+  buzzOpen: boolean
 }
 
 /** 选手答题状态 */
@@ -59,6 +62,22 @@ export interface PlayerAnswerStatus {
   userId: string
   nickname: string
   status: 'waiting' | 'answering' | 'submitted'
+}
+
+/** 抢答记录 */
+export interface BuzzRecord {
+  userId: string
+  nickname: string
+  timestamp: number
+  early: boolean
+}
+
+/** 抢答结果（服务端推送给选手） */
+export interface BuzzResult {
+  questionId: string
+  valid: boolean
+  early: boolean
+  winner: { userId: string; nickname: string } | null
 }
 
 interface UseSocketOptions {
@@ -143,6 +162,10 @@ export function useSocket(opts: UseSocketOptions = {}) {
       myStatus.value = status
     })
 
+    socket.on('player:buzzResult', (result: BuzzResult) => {
+      buzzResult.value = result
+    })
+
     // 管理页：会话状态更新
     if (pageType === 'admin') {
       socket.on('admin:sessionUpdate', (data: SessionData) => {
@@ -178,6 +201,9 @@ export function useSocket(opts: UseSocketOptions = {}) {
   /** 选手状态（页面刷新后从服务端恢复） */
   const myStatus = ref<PlayerMyStatus | null>(null)
 
+  /** 抢答结果（服务端推送） */
+  const buzzResult = ref<BuzzResult | null>(null)
+
   /** 会话在线状态（管理页使用） */
   const sessionData = ref<SessionData>({ home: 0, login: 0, admin: 0, display: 0, player: 0, players: [] })
 
@@ -198,10 +224,17 @@ export function useSocket(opts: UseSocketOptions = {}) {
     socket?.emit('player:submitAnswer', { userId, questionId, answers })
   }
 
+  /** 选手抢答 */
+  function sendBuzz(userId: string, questionId: string) {
+    buzzResult.value = null
+    socket?.emit('player:buzz', { userId, questionId })
+  }
+
   /** 重置选手答题状态（新题目时调用） */
   function resetPlayerAnswerState() {
     answerReceived.value = false
     answerResult.value = null
+    buzzResult.value = null
   }
 
   function disconnect() {
@@ -214,6 +247,6 @@ export function useSocket(opts: UseSocketOptions = {}) {
 
   return {
     connected, serverState, pushState, resetState,
-    registerPlayer, submitAnswer, resetPlayerAnswerState, answerReceived, answerResult, checkPlayerStatus, myStatus, requestSessions, sessionData,
+    registerPlayer, submitAnswer, resetPlayerAnswerState, answerReceived, answerResult, checkPlayerStatus, myStatus, requestSessions, sessionData, sendBuzz, buzzResult,
   }
 }

@@ -17,6 +17,14 @@ export interface PlayerAnswerStatus {
   status: 'waiting' | 'answering' | 'submitted';
 }
 
+/** 抢答记录 */
+export interface BuzzRecord {
+  userId: string;
+  nickname: string;
+  timestamp: number;
+  early: boolean; // true = 提前抢答（倒计时未结束）
+}
+
 /** 存储在服务端、跨页面同步的游戏状态 */
 export interface GameState {
   status: GameStatus;
@@ -42,6 +50,12 @@ export interface GameState {
   serverTime: number;
   /** 当前题目下的选手答题状态（必答题阶段） */
   playerStatuses: PlayerAnswerStatus[];
+  /** 抢答记录：questionId → 抢答事件列表 */
+  buzzRecords: Record<string, BuzzRecord[]>;
+  /** 当前题目抢答获胜者（第一个有效抢答的选手） */
+  buzzWinner: { userId: string; nickname: string; timestamp: number } | null;
+  /** 抢答是否已开放（抢答倒计时自然结束后为 true） */
+  buzzOpen: boolean;
 }
 
 /** 默认游戏状态 */
@@ -64,6 +78,9 @@ function createDefaultState(): GameState {
     answerResults: {},
     serverTime: Date.now(),
     playerStatuses: [],
+    buzzRecords: {},
+    buzzWinner: null,
+    buzzOpen: false,
   };
 }
 

@@ -1,6 +1,7 @@
 # Answering-System
 
-**该项目使用 DeepSeekV4 Pro 全程VibeCoding而来**
+**该项目使用 DeepSeekV4 Pro 全程 VibeCoding 而来**
+
 一个基于 Vue 3 + Node.js 的定制实时知识竞赛答题系统，支持必答题、抢答题、风险题等多种赛制，适用于现场知识竞赛活动。
 
 ## 功能特性

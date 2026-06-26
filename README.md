@@ -1,6 +1,7 @@
 # Answering-System
 
-一个基于 Vue 3 + Node.js 的实时知识竞赛答题系统，支持必答题、抢答题、风险题等多种赛制，适用于现场知识竞赛活动。
+**该项目使用 DeepSeekV4 Pro 全程VibeCoding而来**
+一个基于 Vue 3 + Node.js 的定制实时知识竞赛答题系统，支持必答题、抢答题、风险题等多种赛制，适用于现场知识竞赛活动。
 
 ## 功能特性
 
@@ -17,29 +18,29 @@
 
 ### 前端
 
-| 技术 | 说明 |
-|------|------|
-| Vue 3 | Composition API + `<script setup>` |
-| Vite 8 | 构建工具 |
-| TypeScript | 类型安全 |
-| Element Plus | UI 组件库（自动导入） |
-| Pinia 3 | 状态管理 |
-| Vue Router 5 | 路由（含角色守卫） |
-| Socket.IO Client 4 | WebSocket 通信 |
-| Axios | HTTP 请求 |
-| xlsx | Excel 导出 |
+| 技术               | 说明                               |
+| ------------------ | ---------------------------------- |
+| Vue 3              | Composition API + `<script setup>` |
+| Vite 8             | 构建工具                           |
+| TypeScript         | 类型安全                           |
+| Element Plus       | UI 组件库（自动导入）              |
+| Pinia 3            | 状态管理                           |
+| Vue Router 5       | 路由（含角色守卫）                 |
+| Socket.IO Client 4 | WebSocket 通信                     |
+| Axios              | HTTP 请求                          |
+| xlsx               | Excel 导出                         |
 
 ### 后端
 
-| 技术 | 说明 |
-|------|------|
-| Node.js | 运行环境（ES Modules） |
-| TypeScript | 类型安全 |
-| Express 5 | Web 框架 |
-| Socket.IO 4 | WebSocket 服务 |
-| LowDB 7 | JSON 文件数据库 |
-| nanoid | ID 生成 |
-| cookie-parser | Cookie 管理 |
+| 技术          | 说明                   |
+| ------------- | ---------------------- |
+| Node.js       | 运行环境（ES Modules） |
+| TypeScript    | 类型安全               |
+| Express 5     | Web 框架               |
+| Socket.IO 4   | WebSocket 服务         |
+| LowDB 7       | JSON 文件数据库        |
+| nanoid        | ID 生成                |
+| cookie-parser | Cookie 管理            |
 
 ## 项目结构
 
@@ -120,12 +121,12 @@ pnpm build
 
 系统包含以下页面，通过角色权限控制访问：
 
-| 页面 | 路径 | 说明 |
-|------|------|------|
-| 首页 | `/` | 导航入口 |
-| 登录 | `/login` | 登录/注册 |
-| 管理端 | `/admin` | 题目管理、用户管理、比赛控制面板 |
-| 选手端 | `/player` | 选手答题界面 |
+| 页面   | 路径       | 说明                                 |
+| ------ | ---------- | ------------------------------------ |
+| 首页   | `/`        | 导航入口                             |
+| 登录   | `/login`   | 登录/注册                            |
+| 管理端 | `/admin`   | 题目管理、用户管理、比赛控制面板     |
+| 选手端 | `/player`  | 选手答题界面                         |
 | 展示屏 | `/display` | 大屏展示（当前题目、倒计时、排行榜） |
 
 ### 比赛流程

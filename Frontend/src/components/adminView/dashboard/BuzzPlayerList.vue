@@ -20,9 +20,7 @@ const emit = defineEmits<{
 }>()
 
 // ── 排序 ──
-const sorted = computed(() =>
-  [...props.records].sort((a, b) => a.timestamp - b.timestamp)
-)
+const sorted = computed(() => [...props.records].sort((a, b) => a.timestamp - b.timestamp))
 
 const validBuzzes = computed(() => sorted.value.filter((r) => !r.early))
 const earlyBuzzes = computed(() => sorted.value.filter((r) => r.early))
@@ -100,14 +98,18 @@ async function onDeleteScore(detail: ScoreDetail) {
       '删除确认',
       { confirmButtonText: '删除', cancelButtonText: '取消', type: 'warning' },
     )
-  } catch { return }
+  } catch {
+    return
+  }
   deletingScoreId.value = detail.id
   try {
     await deleteScore(user.id, detail.id)
     ElMessage.success('已删除得分记录')
     if (dialogUser.value) {
       dialogUser.value.totalScore -= detail.score
-      dialogUser.value.scoreDetails = dialogUser.value.scoreDetails.filter((s) => s.id !== detail.id)
+      dialogUser.value.scoreDetails = dialogUser.value.scoreDetails.filter(
+        (s) => s.id !== detail.id,
+      )
     }
     emit('score-added')
   } catch (err: any) {
@@ -130,7 +132,9 @@ async function onDeleteAllScores() {
       '删除全部得分',
       { confirmButtonText: '确认删除', cancelButtonText: '取消', type: 'warning' },
     )
-  } catch { return }
+  } catch {
+    return
+  }
   deletingAllScores.value = true
   try {
     await deleteAllScores(user.id)
@@ -163,7 +167,9 @@ function formatTime(ts: number): string {
       </div>
       <div class="panel-stats">
         <span class="stat-item stat-valid">有效 {{ validBuzzes.length }}</span>
-        <span v-if="earlyBuzzes.length" class="stat-item stat-early">提前 {{ earlyBuzzes.length }}</span>
+        <span v-if="earlyBuzzes.length" class="stat-item stat-early"
+          >提前 {{ earlyBuzzes.length }}</span
+        >
       </div>
     </div>
 
@@ -180,18 +186,18 @@ function formatTime(ts: number): string {
         @click="openDialog(b)"
       >
         <span class="chip-rank" :class="{ 'early-rank': b.early }">
-          {{ b.early ? '!' : `#${validBuzzes.findIndex(v => v.userId === b.userId) + 1}` }}
+          {{ b.early ? '!' : `#${validBuzzes.findIndex((v) => v.userId === b.userId) + 1}` }}
         </span>
         <span class="chip-name">{{ b.nickname }}</span>
         <span v-if="!b.early" class="chip-gap">{{ gapText(b.timestamp) }}</span>
-        <span v-if="!b.early && winner && b.userId === winner.userId" class="chip-winner-tag">首</span>
+        <span v-if="!b.early && winner && b.userId === winner.userId" class="chip-winner-tag"
+          >首</span
+        >
       </div>
     </div>
 
     <!-- 等待中 -->
-    <div v-if="records.length === 0 && buzzOpen" class="waiting-row">
-      等待选手抢答...
-    </div>
+    <div v-if="records.length === 0 && buzzOpen" class="waiting-row">等待选手抢答...</div>
   </div>
 
   <!-- 得分详情弹窗（与选手列表相同） -->
@@ -207,9 +213,7 @@ function formatTime(ts: number): string {
         <span class="detail-user-total">
           总分：<strong>{{ dialogUser?.totalScore ?? 0 }}</strong> 分
         </span>
-        <span class="detail-user-count">
-          {{ dialogUser?.scoreDetails?.length ?? 0 }} 条记录
-        </span>
+        <span class="detail-user-count"> {{ dialogUser?.scoreDetails?.length ?? 0 }} 条记录 </span>
       </div>
       <div class="detail-header-actions">
         <el-button
@@ -237,10 +241,18 @@ function formatTime(ts: number): string {
     <div v-if="showAddForm" class="add-score-inline">
       <div class="add-score-row">
         <span class="add-score-label">分值</span>
-        <el-input-number v-model="scoreForm.score" :min="-999" :max="999" size="small" style="width: 120px" />
+        <el-input-number
+          v-model="scoreForm.score"
+          :min="-999"
+          :max="999"
+          size="small"
+          style="width: 120px"
+        />
         <span class="add-score-label">原因</span>
         <el-input v-model="scoreForm.reason" placeholder="得分原因" size="small" style="flex: 1" />
-        <el-button type="primary" size="small" :loading="scoreLoading" @click="onAddScore">确认</el-button>
+        <el-button type="primary" size="small" :loading="scoreLoading" @click="onAddScore"
+          >确认</el-button
+        >
         <el-button size="small" @click="showAddForm = false">取消</el-button>
       </div>
     </div>
@@ -333,8 +345,12 @@ function formatTime(ts: number): string {
   font-size: 11px;
 }
 
-.stat-valid { color: #67c23a; }
-.stat-early { color: #e6a23c; }
+.stat-valid {
+  color: #67c23a;
+}
+.stat-early {
+  color: #e6a23c;
+}
 
 /* ========== 选手条（有效+提前混排） ========== */
 .player-strip {

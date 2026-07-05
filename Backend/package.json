@@ -1,7 +1,7 @@
 {
   "name": "answering-system-backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "答题系统后端服务",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {

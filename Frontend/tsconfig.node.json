@@ -1,6 +1,33 @@
-// TSConfig for modules that run in Node.js environment via either transpilation or type-stripping.
+// ============================================================================
+// tsconfig.node.json —— Node.js 环境的 TypeScript 配置
+// ============================================================================
+// 【技术学习】此配置专门用于在 Node.js 环境中运行的配置文件，
+// 如 vite.config.ts、vitest.config.ts、eslint.config.ts 等。
+//
+// 这些文件不在浏览器中运行，而是在 Node.js 中执行（由构建工具加载），
+// 因此需要使用 Node.js 的模块系统和类型定义，而非浏览器的 DOM API。
+//
+// 【技术学习】为什么需要单独的配置？
+//   - 浏览器有 document、window 等全局对象
+//   - Node.js 有 process、Buffer、__dirname 等全局对象
+//   - 模块解析方式也不同（Node.js 有自己的模块加载机制）
+//   - TypeScript 需要针对不同环境提供正确的类型检查
+// ============================================================================
+
 {
+  // 【技术学习】继承 Node.js 24 的官方 TypeScript 配置
+  // @tsconfig/node24 提供了适合 Node.js 24 运行环境的编译选项默认值
   "extends": "@tsconfig/node24/tsconfig.json",
+
+  // 【技术学习】include —— 指定此配置作用于哪些文件
+  // 这些都是项目中在 Node.js 环境下运行的配置文件：
+  //   - vite.config.*：Vite 构建工具配置
+  //   - vitest.config.*：Vitest 测试框架配置（如果使用）
+  //   - cypress.config.*：Cypress 端到端测试配置（如果使用）
+  //   - playwright.config.*：Playwright 测试配置（如果使用）
+  //   - eslint.config.*：ESLint 代码检查配置
+  //
+  // 使用 * 通配符匹配 .ts、.js、.mts 等各种扩展名
   "include": [
     "vite.config.*",
     "vitest.config.*",
@@ -8,20 +35,55 @@
     "playwright.config.*",
     "eslint.config.*"
   ],
+
   "compilerOptions": {
-    // Most tools use transpilation instead of Node.js's native type-stripping.
-    // Bundler mode provides a smoother developer experience.
+    // 【技术学习】module: "preserve" —— 保留原始的模块语法，不做转换
+    //
+    // "preserve" 的含义：
+    //   - 如果源码写的是 import/export（ESM），输出时保持 ESM 格式
+    //   - 如果源码写的是 require/module.exports（CJS），输出时保持 CJS 格式
+    //   - TypeScript 不会改变你的模块语法，由下游工具（如 Vite）负责处理
+    //
+    // 与其他选项的对比：
+    //   - "CommonJS"：强制将所有 import 转换为 require
+    //   - "ESNext"：保持 ESM 但可能会做某些转换
+    //   - "preserve"：完全不做转换，最灵活
     "module": "preserve",
+
+    // 【技术学习】moduleResolution: "bundler" —— 使用打包器风格的模块解析策略
+    //
+    // 这是 TypeScript 5.0+ 引入的新选项，专为 Vite、Webpack 等打包器设计：
+    //   1. 支持 package.json 中的 "exports" 字段解析
+    //   2. 允许省略文件扩展名（import './foo' 可以找到 foo.ts）
+    //   3. 支持 tsconfig.json 中的 paths 别名
+    //   4. 更准确地模拟打包器的模块解析行为
+    //
+    // 与 "node" 解析策略的区别：
+    //   - "node"：模拟 Node.js 原生的 CommonJS 模块解析
+    //   - "bundler"：模拟 Vite/Webpack 等打包器的 ESM 模块解析
+    //   - 在使用打包器的项目中，"bundler" 能提供更准确的类型检查
     "moduleResolution": "bundler",
 
-    // Include Node.js types and avoid accidentally including other `@types/*` packages.
+    // 【技术学习】types: ["node"] —— 只包含 Node.js 的类型声明
+    //
+    // - 明确只引入 @types/node 中的类型（如 process、Buffer、fs、path 等）
+    // - 避免意外引入 node_modules/@types/ 下其他包的全局类型
+    // - 防止不同 @types 包之间的全局类型冲突
     "types": ["node"],
 
-    // Disable emitting output during `vue-tsc --build`, which is used for type-checking only.
+    // 【技术学习】noEmit: true —— 不输出编译后的 JavaScript 文件
+    //
+    // 这些配置文件由 Vite 自己加载和处理（Vite 内置了 TypeScript 支持），
+    // 不需要 TypeScript 编译器输出 .js 文件。
+    // vue-tsc --build 运行时只做类型检查，不做文件输出。
     "noEmit": true,
 
-    // `vue-tsc --build` produces a .tsbuildinfo file for incremental type-checking.
-    // Specified here to keep it out of the root directory.
+    // 【技术学习】tsBuildInfoFile —— 增量编译信息文件的输出路径
+    //
+    // 与 tsconfig.app.json 中的原理相同：
+    //   - 保存编译状态，实现增量编译
+    //   - 输出到 node_modules/.tmp/ 保持根目录整洁
+    //   - .tsbuildinfo 文件名与 app 配置不同，避免冲突
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo"
   }
 }

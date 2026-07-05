@@ -1,0 +1,109 @@
+{
+  // 【技术学习】TypeScript 编译器配置
+  // tsconfig.json 用于配置 TypeScript 编译器的行为
+  // 可以控制编译目标、模块系统、严格检查等选项
+  "compilerOptions": {
+
+    // 【技术学习】target - 编译目标
+    // 指定 TypeScript 编译后的 JavaScript 版本
+    // "ES2022" 表示编译为 ES2022 标准的 JavaScript
+    // 选择 ES2022 的原因：
+    // 1. Node.js 18+ 完全支持 ES2022
+    // 2. 支持 top-level await、Array.at()、Object.hasOwn() 等新特性
+    // 3. 兼顾现代特性和兼容性
+    // 其他选项：ES5、ES6、ES2015-ES2023、ESNext
+    "target": "ES2022",
+
+    // 【技术学习】module - 模块系统
+    // 指定编译后的 JavaScript 使用的模块系统
+    // "NodeNext" 表示使用 Node.js 的模块解析规则
+    // 这与 package.json 中的 "type": "module" 配合使用
+    // 支持 ESM (import/export) 和 CommonJS (require) 的互操作
+    // 其他选项：CommonJS、ES6、ES2020、ES2022、ESNext
+    "module": "NodeNext",
+
+    // 【技术学习】moduleResolution - 模块解析策略
+    // 指定如何查找模块文件
+    // "NodeNext" 使用 Node.js 的模块解析算法
+    // 解析规则：
+    // 1. 先查找 .ts 文件，再查找 .tsx 文件
+    // 2. 支持 package.json 的 "exports" 字段
+    // 3. 支持目录索引文件 (index.ts)
+    // 其他选项：Node、Classic、Bundler
+    "moduleResolution": "NodeNext",
+
+    // rootDir - 源代码根目录
+    // 指定 TypeScript 源文件的根目录
+    // 编译时会保持此目录的结构
+    // 例如：src/index.ts -> dist/index.js
+    "rootDir": "src",
+
+    // outDir - 输出目录
+    // 指定编译后的 JavaScript 文件输出位置
+    // 编译器会自动创建此目录
+    "outDir": "dist",
+
+    // 【技术学习】strict - 严格模式
+    // 启用所有严格类型检查选项
+    // 包括：
+    // - strictNullChecks：禁止隐式 null/undefined
+    // - strictFunctionTypes：函数参数类型严格检查
+    // - strictBindCallApply：bind/call/apply 参数检查
+    // - strictPropertyInitialization：类属性必须初始化
+    // - noImplicitAny：禁止隐式 any 类型
+    // - noImplicitThis：禁止隐式 this 类型
+    // - alwaysStrict：严格模式运行时检查
+    // 建议：新项目务必开启，提高代码质量
+    "strict": true,
+
+    // 【技术学习】esModuleInterop - ES 模块互操作
+    // 解决 CommonJS 和 ES Module 之间的兼容问题
+    // 启用后可以：
+    // 1. 使用 import express from 'express' 语法导入 CommonJS 模块
+    // 2. 自动处理 default export 的转换
+    // 不启用时需要使用 import * as express from 'express'
+    "esModuleInterop": true,
+
+    // forceConsistentCasingInFileNames - 强制文件名大小写一致
+    // 防止在不同操作系统上因文件名大小写导致的问题
+    // 例如：import './MyFile' 和 import './myfile' 会被视为不同文件
+    // 在 Windows 上开发、Linux 上部署时特别重要
+    "forceConsistentCasingInFileNames": true,
+
+    // skipLibCheck - 跳过类型声明文件检查
+    // 不检查 node_modules 中的 .d.ts 文件
+    // 优点：加快编译速度，避免第三方库类型问题
+    // 缺点：可能错过某些类型错误
+    // 建议：开发时关闭，生产构建时开启
+    "skipLibCheck": true,
+
+    // resolveJsonModule - 允许导入 JSON 文件
+    // 启用后可以直接 import data from './data.json'
+    // 会自动推断 JSON 文件的 TypeScript 类型
+    "resolveJsonModule": true,
+
+    // declaration - 生成类型声明文件
+    // 编译时会生成 .d.ts 类型声明文件
+    // 便于其他项目使用此库时获得类型支持
+    "declaration": true,
+
+    // sourceMap - 生成源码映射文件
+    // 生成 .js.map 文件，用于调试
+    // 可以在浏览器或调试器中直接调试 TypeScript 源码
+    // 生产环境建议关闭以提高性能
+    "sourceMap": true
+  },
+
+  // include - 包含的文件
+  // 指定哪些文件需要编译
+  // "src/**/*" 表示 src 目录下的所有文件
+  // ** 表示任意层级的子目录
+  // * 表示任意文件名
+  "include": ["src/**/*"],
+
+  // exclude - 排除的文件
+  // 指定哪些文件不需要编译
+  // node_modules：依赖包目录，不需要编译
+  // dist：编译输出目录，避免重复编译
+  "exclude": ["node_modules", "dist"]
+}

@@ -1,15 +1,83 @@
+<!--
+  ============================================================================
+  index.html —— 应用的入口 HTML 文件（SPA 单页应用）
+  ============================================================================
+  【技术学习】什么是 SPA（Single Page Application，单页应用）？
+    - 整个应用只有一个 HTML 页面
+    - 页面内容由 JavaScript（Vue）动态渲染，而非服务端返回多个 HTML
+    - 用户在页面间"跳转"时，实际上只是 JavaScript 替换了页面内容
+    - URL 变化通过前端路由（Vue Router）实现，不会触发整页刷新
+    - 典型例子：Gmail、GitHub、掘金等网站
+
+  【技术学习】为什么 Vite 项目中 index.html 在根目录？
+    - 传统 Webpack 项目：index.html 在 public/ 或 src/ 中，由插件处理
+    - Vite 项目：index.html 必须在项目根目录（最外层）
+    - Vite 以 index.html 作为入口点，解析其中的 <script> 和 <link> 标签
+    - 开发时 Vite 自动注入 HMR 客户端代码，实现热更新
+
+  【技术学习】这个文件与普通 HTML 的区别：
+    - 它是 Vite 构建流程的一部分，而非静态文件
+    - Vite 会处理其中引用的 .ts/.vue 文件（自动编译、打包）
+    - 生产构建时，Vite 会自动注入优化后的 CSS 和 JS 链接
+  ============================================================================
+-->
 <!doctype html>
+
+<!--
+  【技术学习】<html> 标签属性说明：
+  - lang=""：页面语言（空值表示未指定，建议设为 "zh-CN" 表示简体中文）
+  - class="dark"：启用 Element Plus 的暗色（Dark）主题
+    Element Plus 通过检测 <html> 元素上的 "dark" 类名来切换暗色主题样式
+    如果想切换为亮色主题，移除这个 class 即可
+-->
 <html lang="" class="dark">
   <head>
+    <!-- 【技术学习】字符编码设置为 UTF-8，支持中文等多语言字符 -->
     <meta charset="UTF-8" />
+
+    <!--
+      【技术学习】视口（viewport）元标签 —— 移动端响应式布局的基础
+      - width=device-width：页面宽度等于设备屏幕宽度
+      - initial-scale=1.0：初始缩放比例为 1（不缩放）
+      - 没有这个标签，移动设备会默认以桌面宽度渲染页面，导致内容过小
+    -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- 页面标题，显示在浏览器标签栏上 -->
     <title>在线问答系统</title>
   </head>
   <body>
+    <!--
+      【技术学习】div#app —— Vue 应用的挂载点（Mount Point）
+      - Vue 应用启动时，会将根组件渲染（挂载）到这个 div 中
+      - Vue 会用组件渲染的内容完全替换这个 div 的 innerHTML
+      - id="app" 是约定俗成的名称，与 main.ts 中 createApp().mount('#app') 对应
+      - 在 Vue 接管之前，这个 div 是空的，页面不会显示任何内容
+    -->
     <div id="app"></div>
+
+    <!--
+      【技术学习】应用入口脚本
+      - type="module"：声明这是一个 ES Module 脚本
+        · 浏览器会以模块模式加载此脚本（支持 import/export 语法）
+        · 模块脚本默认是 defer 的（延迟到 HTML 解析完成后执行）
+        · 模块脚本自动启用严格模式（'use strict'）
+        · 每个模块有独立的作用域，变量不会污染全局
+      - src="/src/main.ts"：指向应用的 TypeScript 入口文件
+        · Vite 会拦截这个请求，将 TypeScript 编译为浏览器可执行的 JavaScript
+        · / 表示项目根目录（由 Vite 的开发服务器解析）
+    -->
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
+
+<!--
+  【技术学习】关于 <style> 放在 <body> 之后的说明：
+  - 按照 HTML 规范，<style> 应该放在 <head> 中
+  - 但现代浏览器对此很宽容，放在 <body> 之后也能正常工作
+  - Vite 在处理时会自动将样式移到正确的位置
+  - 这里的样式用于清除 body 的默认外边距，让页面内容紧贴浏览器窗口边缘
+-->
 <style>
   body {
     margin: 0;

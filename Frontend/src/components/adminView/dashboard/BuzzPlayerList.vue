@@ -1,3 +1,29 @@
+<!--
+  ====================================================================
+  BuzzPlayerList.vue — 抢答选手列表组件
+  ====================================================================
+
+  【组件职责】
+  在抢答题阶段展示所有抢答记录，包括：
+  1. 有效抢答和提前抢答的分类展示
+  2. 获胜者标签（首位有效抢答者）
+  3. 响应时间差距显示（与首位的毫秒差）
+  4. 点击选手卡片打开得分管理弹窗
+  5. 统计摘要（有效/提前各多少人）
+  6. 等待中状态提示
+
+  【技术学习 — 设计思路】
+  - 抢答记录分为两类：有效抢答（!early）和提前抢答（early）
+  - 提前抢答：在倒计时开始前就按下按钮的行为，会被标记为 early
+  - 获胜者：第一个有效抢答者（timestamp 最小的非 early 记录）
+  - 响应时间差距：每条记录与首位有效抢答者的 timestamp 差值
+  - 点击任何选手卡片都可以打开得分管理弹窗（支持为抢答者加分）
+
+  【数据流】
+  父组件 DashboardPanel → props: records, winner, buzzOpen, currentQuestion
+  得分操作 → API → emit('score-added') → 父组件刷新排名和选手列表
+-->
+
 <script setup lang="ts">
 import { ref, computed, reactive } from 'vue'
 import { Plus, Delete } from '@element-plus/icons-vue'
@@ -8,31 +34,50 @@ import type { ScoreDetail } from '@/types/score'
 import { addScore, deleteScore, deleteAllScores } from '@/api/scores'
 import { getAllUsers } from '@/api/users'
 
+// ====================================================================
+// Props 和 Emits
+// ====================================================================
 const props = defineProps<{
-  records: BuzzRecord[]
-  winner: { userId: string; nickname: string; timestamp: number } | null
-  buzzOpen: boolean
-  currentQuestion: Question | null
+  records: BuzzRecord[]           // 当前题目的所有抢答记录
+  winner: { userId: string; nickname: string; timestamp: number } | null  // 获胜者
+  buzzOpen: boolean               // 抢答是否已开启
+  currentQuestion: Question | null // 当前题目（用于自动填充得分原因）
 }>()
 
 const emit = defineEmits<{
-  'score-added': []
+  'score-added': []  // 得分变动后通知父组件刷新数据
 }>()
 
-// ── 排序 ──
+// ====================================================================
+// 排序和分类
+// ====================================================================
+
+/**
+ * 按时间戳排序的记录列表
+ * 【技术学习】[...props.records] 创建副本后再排序，避免修改 props
+ */
 const sorted = computed(() => [...props.records].sort((a, b) => a.timestamp - b.timestamp))
 
+/** 有效抢答记录（非提前抢答） */
 const validBuzzes = computed(() => sorted.value.filter((r) => !r.early))
+
+/** 提前抢答记录 */
 const earlyBuzzes = computed(() => sorted.value.filter((r) => r.early))
 
-/** 响应时差 */
+/**
+ * 计算响应时差文字
+ * @param ts 当前记录的时间戳
+ * @returns "首位" 或 "+XXms"
+ */
 function gapText(ts: number): string {
   const first = validBuzzes.value[0]
-  if (!first || ts === first.timestamp) return '首位'
-  return `+${ts - first.timestamp}ms`
+  if (!first || ts === first.timestamp) return '首位'  // 首位有效抢答者
+  return `+${ts - first.timestamp}ms`  // 与首位的时间差（毫秒）
 }
 
-// ── 得分弹窗（与选手列表弹窗相同） ──
+// ====================================================================
+// 得分管理弹窗（与 PlayerList 中的逻辑类似）
+// ====================================================================
 const detailDialogVisible = ref(false)
 const dialogUser = ref<User | null>(null)
 const showAddForm = ref(false)
@@ -41,8 +86,14 @@ const scoreLoading = ref(false)
 const deletingScoreId = ref<string | null>(null)
 const deletingAllScores = ref(false)
 
+/**
+ * 打开得分详情弹窗
+ * 【技术学习】点击抢答选手卡片后：
+ * 1. 从服务器获取该用户的完整数据（包含 scoreDetails）
+ * 2. 自动填充得分表单：分值 = 当前题目分值，原因 = "抢答题：题干前30字"
+ * 这样管理员可以快速为抢答者加分
+ */
 async function openDialog(record: BuzzRecord) {
-  // 拉取用户数据
   try {
     const { data: res } = await getAllUsers()
     const user = res.data.find((u: User) => u.id === record.userId) || null
@@ -51,6 +102,7 @@ async function openDialog(record: BuzzRecord) {
     dialogUser.value = null
   }
   showAddForm.value = false
+  // 自动填充得分表单
   scoreForm.score = props.currentQuestion?.score ?? 0
   scoreForm.reason = props.currentQuestion
     ? `抢答题：${props.currentQuestion.stem.slice(0, 30)}`
@@ -58,6 +110,7 @@ async function openDialog(record: BuzzRecord) {
   detailDialogVisible.value = true
 }
 
+/** 为选手添加得分 */
 async function onAddScore() {
   const user = dialogUser.value
   if (!user) return
@@ -72,16 +125,18 @@ async function onAddScore() {
       reason: scoreForm.reason,
     })
     ElMessage.success(`已为「${user.nickname}」添加 ${scoreForm.score} 分`)
+    // 更新弹窗中的用户数据
     if (dialogUser.value) {
       dialogUser.value.totalScore += res.data.score
       dialogUser.value.scoreDetails = [...dialogUser.value.scoreDetails, res.data]
     }
+    // 重置表单（再次填充默认值）
     scoreForm.score = props.currentQuestion?.score ?? 0
     scoreForm.reason = props.currentQuestion
       ? `抢答题：${props.currentQuestion.stem.slice(0, 30)}`
       : ''
     showAddForm.value = false
-    emit('score-added')
+    emit('score-added')  // 通知父组件刷新排名
   } catch (err: any) {
     ElMessage.error(err?.response?.data?.message || '添加失败')
   } finally {
@@ -89,6 +144,7 @@ async function onAddScore() {
   }
 }
 
+/** 删除单条得分记录 */
 async function onDeleteScore(detail: ScoreDetail) {
   const user = dialogUser.value
   if (!user) return
@@ -119,6 +175,7 @@ async function onDeleteScore(detail: ScoreDetail) {
   }
 }
 
+/** 批量清空得分 */
 async function onDeleteAllScores() {
   const user = dialogUser.value
   if (!user) return
@@ -151,6 +208,7 @@ async function onDeleteAllScores() {
   }
 }
 
+/** 格式化时间戳 */
 function formatTime(ts: number): string {
   const d = new Date(ts)
   const pad = (n: number) => String(n).padStart(2, '0')
@@ -159,7 +217,12 @@ function formatTime(ts: number): string {
 </script>
 
 <template>
+  <!--
+    【技术学习】v-if 条件：有记录或抢答已开启时显示面板
+    buzzOpen 为 true 但 records 为空时，显示"等待选手抢答..."提示
+  -->
   <div v-if="records.length > 0 || buzzOpen" class="buzz-panel">
+    <!-- 顶部信息栏 -->
     <div class="panel-row">
       <div class="panel-info">
         <span class="panel-title">抢答记录</span>
@@ -167,13 +230,20 @@ function formatTime(ts: number): string {
       </div>
       <div class="panel-stats">
         <span class="stat-item stat-valid">有效 {{ validBuzzes.length }}</span>
+        <!-- 只有存在提前抢答时才显示 -->
         <span v-if="earlyBuzzes.length" class="stat-item stat-early"
           >提前 {{ earlyBuzzes.length }}</span
         >
       </div>
     </div>
 
-    <!-- 所有选手同一行展示（有效 + 提前混排） -->
+    <!--
+      选手芯片条（有效 + 提前混排显示）
+      【技术学习】v-for 遍历排序后的记录，每条渲染一个可点击的芯片
+      芯片样式根据状态动态变化：
+      - is-winner: 获胜者（绿色高亮）
+      - is-early: 提前抢答（半透明 + 橙色边框）
+    -->
     <div v-if="records.length" class="player-strip">
       <div
         v-for="(b, i) in sorted"
@@ -185,28 +255,37 @@ function formatTime(ts: number): string {
         }"
         @click="openDialog(b)"
       >
+        <!-- 排名编号（提前抢答显示 "!"） -->
         <span class="chip-rank" :class="{ 'early-rank': b.early }">
           {{ b.early ? '!' : `#${validBuzzes.findIndex((v) => v.userId === b.userId) + 1}` }}
         </span>
+        <!-- 选手昵称 -->
         <span class="chip-name">{{ b.nickname }}</span>
+        <!-- 响应时差（仅有效抢答显示） -->
         <span v-if="!b.early" class="chip-gap">{{ gapText(b.timestamp) }}</span>
+        <!-- 获胜者标签（首位有效抢答者显示"首"字标签） -->
         <span v-if="!b.early && winner && b.userId === winner.userId" class="chip-winner-tag"
           >首</span
         >
       </div>
     </div>
 
-    <!-- 等待中 -->
+    <!-- 等待中提示（抢答已开启但无人抢答） -->
     <div v-if="records.length === 0 && buzzOpen" class="waiting-row">等待选手抢答...</div>
   </div>
 
-  <!-- 得分详情弹窗（与选手列表相同） -->
+  <!--
+    ========== 得分详情弹窗 ==========
+    【技术学习】与 PlayerList 中的弹窗结构基本相同
+    但默认填充抢答题相关信息（分值和原因）
+  -->
   <el-dialog
     v-model="detailDialogVisible"
     :title="dialogUser ? `「${dialogUser.nickname}」得分详情` : '得分详情'"
     width="580px"
     destroy-on-close
   >
+    <!-- 弹窗头部 -->
     <div class="detail-header">
       <div class="detail-user-info">
         <span class="detail-user-name">{{ dialogUser?.nickname }}</span>
@@ -237,7 +316,7 @@ function formatTime(ts: number): string {
       </div>
     </div>
 
-    <!-- 添加得分表单 -->
+    <!-- 添加得分表单（可折叠） -->
     <div v-if="showAddForm" class="add-score-inline">
       <div class="add-score-row">
         <span class="add-score-label">分值</span>
@@ -295,6 +374,7 @@ function formatTime(ts: number): string {
 </template>
 
 <style scoped>
+/* ========== 面板容器 ========== */
 .buzz-panel {
   background: var(--bg-card);
   border: 1px solid var(--border-base);
@@ -306,6 +386,7 @@ function formatTime(ts: number): string {
   flex-shrink: 0;
 }
 
+/* 顶部信息栏 */
 .panel-row {
   display: flex;
   align-items: center;
@@ -341,18 +422,11 @@ function formatTime(ts: number): string {
   gap: 10px;
 }
 
-.stat-item {
-  font-size: 11px;
-}
+.stat-item { font-size: 11px; }
+.stat-valid { color: #67c23a; }   /* 有效：绿色 */
+.stat-early { color: #e6a23c; }   /* 提前：橙色 */
 
-.stat-valid {
-  color: #67c23a;
-}
-.stat-early {
-  color: #e6a23c;
-}
-
-/* ========== 选手条（有效+提前混排） ========== */
+/* ========== 选手芯片条 ========== */
 .player-strip {
   display: flex;
   flex-wrap: wrap;
@@ -364,7 +438,7 @@ function formatTime(ts: number): string {
   scrollbar-width: thin;
 }
 
-/* ========== 选手卡片 ========== */
+/* 单个选手芯片 */
 .player-chip {
   display: flex;
   align-items: center;
@@ -378,11 +452,13 @@ function formatTime(ts: number): string {
   white-space: nowrap;
 }
 
+/* 悬停效果 */
 .player-chip:hover {
   background: rgba(64, 158, 255, 0.1);
   border-color: rgba(64, 158, 255, 0.25);
 }
 
+/* 【技术学习】获胜者样式：绿色高亮 */
 .player-chip.is-winner {
   background: rgba(103, 194, 58, 0.1);
   border-color: rgba(103, 194, 58, 0.25);
@@ -392,6 +468,7 @@ function formatTime(ts: number): string {
   background: rgba(103, 194, 58, 0.18);
 }
 
+/* 提前抢答样式：半透明 + 橙色边框 */
 .player-chip.is-early {
   opacity: 0.5;
   border-color: rgba(230, 162, 60, 0.2);
@@ -402,6 +479,7 @@ function formatTime(ts: number): string {
   opacity: 0.75;
 }
 
+/* 排名编号 */
 .chip-rank {
   font-weight: 700;
   font-size: 11px;
@@ -410,6 +488,7 @@ function formatTime(ts: number): string {
   min-width: 16px;
 }
 
+/* 提前抢答的排名标记（橙色） */
 .early-rank {
   color: #e6a23c;
 }
@@ -419,12 +498,14 @@ function formatTime(ts: number): string {
   color: var(--text-primary);
 }
 
+/* 响应时差（等宽字体） */
 .chip-gap {
   color: var(--text-secondary);
   font-size: 11px;
   font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
 }
 
+/* 获胜者"首"字标签 */
 .chip-winner-tag {
   font-size: 10px;
   font-weight: 700;
@@ -434,7 +515,7 @@ function formatTime(ts: number): string {
   border-radius: 3px;
 }
 
-/* ========== 等待 ========== */
+/* 等待中提示 */
 .waiting-row {
   padding: 10px 14px;
   font-size: 12px;
@@ -484,6 +565,7 @@ function formatTime(ts: number): string {
   gap: 6px;
 }
 
+/* 添加得分行内表单 */
 .add-score-inline {
   margin-bottom: 14px;
   padding: 10px 14px;
@@ -504,6 +586,7 @@ function formatTime(ts: number): string {
   white-space: nowrap;
 }
 
+/* 分值颜色 */
 .score-positive {
   color: #67c23a;
   font-weight: 600;

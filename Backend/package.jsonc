@@ -1,0 +1,129 @@
+{
+  // 项目名称：答题系统后端
+  "name": "answering-system-backend",
+
+  // 项目版本号：遵循语义化版本规范 (主版本.次版本.修订号)
+  "version": "1.0.0",
+
+  // 项目描述
+  "description": "答题系统后端服务",
+
+  // 【技术学习】"type": "module" 的含义
+  // 设置为 "module" 表示使用 ES Module (ESM) 模块系统
+  // 这意味着可以使用 import/export 语法，而不是 require/module.exports
+  // Node.js 从 v12 开始支持 ESM，v14+ 趋于稳定
+  // 注意：ESM 和 CommonJS 不能混用，需要统一
+  "type": "module",
+
+  // 入口文件：编译后的 JavaScript 文件位置
+  "main": "dist/index.js",
+
+  // ============================================================
+  // 【scripts 脚本命令】
+  // 通过 npm run <script-name> 或 pnpm <script-name> 执行
+  // ============================================================
+  "scripts": {
+    // 开发模式：使用 tsx 监听文件变化，自动重启服务
+    // tsx 是一个 TypeScript 执行器，无需编译即可运行 TS 文件
+    // watch 参数表示监听文件变化并自动重启
+    "dev": "tsx watch src/index.ts",
+
+    // 构建项目：使用 TypeScript 编译器将 .ts 文件编译为 .js 文件
+    // 编译后的文件会输出到 dist 目录
+    "build": "tsc",
+
+    // 生产模式启动：运行编译后的 JavaScript 文件
+    // 需要先执行 npm run build 编译项目
+    "start": "node dist/index.js",
+
+    // 代码格式化：使用 Prettier 自动格式化所有 TypeScript 文件
+    // --write 参数表示直接修改文件
+    "format": "prettier --write \"src/**/*.ts\"",
+
+    // 格式化检查：检查代码是否符合 Prettier 格式规范
+    // 不修改文件，仅报告不符合规范的文件
+    "format:check": "prettier --check \"src/**/*.ts\"",
+
+    // 代码检查：使用 TypeScript 编译器进行类型检查
+    // --noEmit 参数表示只检查不生成输出文件
+    "lint": "tsc --noEmit"
+  },
+
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+
+  // 【技术学习】packageManager 字段的作用
+  // 指定项目使用的包管理器及其版本
+  // 这是 Node.js 的 Corepack 功能，用于确保团队使用相同的包管理器
+  // 执行 "corepack enable" 后，pnpm 命令会自动使用指定版本
+  // 可以避免不同开发者使用不同版本的包管理器导致的依赖问题
+  "packageManager": "pnpm@10.28.0",
+
+  // ============================================================
+  // 【dependencies 生产依赖】
+  // 运行时需要的依赖包，会被打包到生产环境
+  // ============================================================
+  "dependencies": {
+    // cookie-parser：Express 中间件，用于解析 Cookie
+    // 可以将 Cookie 字符串转换为对象，方便读取和处理
+    "cookie-parser": "^1.4.7",
+
+    // express：最流行的 Node.js Web 框架
+    // 提供路由、中间件、请求处理等核心功能
+    // v5 是最新版本，支持 async/await 等新特性
+    "express": "^5.2.1",
+
+    // lowdb：轻量级 JSON 数据库
+    // 基于 Lodash，将数据存储为 JSON 文件
+    // 适合小型项目或原型开发，无需安装数据库服务
+    "lowdb": "^7.0.1",
+
+    // nanoid：生成唯一 ID 的库
+    // 比 UUID 更短、更安全，默认生成 21 位字符串
+    // 用于生成题目 ID、用户 ID 等唯一标识
+    "nanoid": "^5.1.9",
+
+    // socket.io：实时通信库
+    // 基于 WebSocket，支持双向实时通信
+    // 用于实现抢答功能的实时通知
+    "socket.io": "^4.8.3"
+  },
+
+  // ============================================================
+  // 【devDependencies 开发依赖】
+  // 仅在开发时使用的依赖包，不会打包到生产环境
+  // ============================================================
+  "devDependencies": {
+    // @types/cookie-parser：cookie-parser 的 TypeScript 类型定义
+    // 提供 TypeScript 类型支持，增强代码提示和类型检查
+    "@types/cookie-parser": "^1.4.10",
+
+    // @types/express：Express 的 TypeScript 类型定义
+    // 提供 Request、Response、NextFunction 等类型
+    "@types/express": "^5.0.3",
+
+    // @types/node：Node.js 核心模块的 TypeScript 类型定义
+    // 提供 fs、path、http 等模块的类型支持
+    "@types/node": "^22.15.21",
+
+    // nodemon：文件变化监听工具
+    // 当文件变化时自动重启 Node.js 应用
+    // 本项目使用 tsx watch 替代，但保留作为备选
+    "nodemon": "^3.1.14",
+
+    // prettier：代码格式化工具
+    // 自动统一代码风格，支持多种语言
+    "prettier": "^3.5.3",
+
+    // tsx：TypeScript 执行器
+    // 可以直接运行 TypeScript 文件，无需预先编译
+    // 基于 esbuild，速度极快，适合开发环境
+    "tsx": "^4.19.4",
+
+    // typescript：TypeScript 编译器
+    // 将 TypeScript 代码编译为 JavaScript
+    // 提供类型检查、代码转换等功能
+    "typescript": "^5.8.3"
+  }
+}

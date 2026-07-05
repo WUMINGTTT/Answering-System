@@ -1,18 +1,81 @@
+// ============================================================================
+// tsconfig.app.json —— 应用源代码的 TypeScript 配置
+// ============================================================================
+// 【技术学习】此配置专门用于 src/ 目录下的应用源代码（运行在浏览器中）。
+// 它继承了 Vue 官方推荐的 DOM 类型库配置，并针对本项目做了自定义调整。
+//
+// 与 tsconfig.node.json 的区别：
+//   - 此文件：浏览器环境，包含 document、window 等 DOM API 类型
+//   - node 文件：Node.js 环境，包含 process、Buffer 等 Node API 类型
+// ============================================================================
+
 {
+  // 【技术学习】extends —— 继承基础配置
+  // 从 @vue/tsconfig 包继承 DOM 环境的 TypeScript 配置
+  //
+  // tsconfig.dom.json 基础配置包含：
+  //   - "lib": ["ESNext", "DOM", "DOM.Iterable"] —— 引入 DOM 类型库
+  //   - "target": "ESNext" —— 编译目标为最新 ES 标准
+  //   - "module": "ESNext" —— 使用 ES Module 模块系统
+  //   - 等其他 Vue 项目推荐配置
+  //
+  // 【技术学习】DOM 类型库的作用：
+  //   - 提供 document.getElementById()、window.addEventListener() 等 Web API 的类型定义
+  //   - 没有这个库，TypeScript 不认识 document、window、HTMLElement 等全局对象
+  //   - 让编辑器能对 DOM 操作代码进行智能提示和类型检查
   "extends": "@vue/tsconfig/tsconfig.dom.json",
+
+  // 【技术学习】include —— 指定哪些文件需要被 TypeScript 编译和检查
+  // 使用 glob 模式匹配文件路径：
+  //   - "env.d.ts"：项目根目录下的类型声明文件（通常用于声明环境变量类型）
+  //   - "src/**/*"：src 目录下所有层级的所有文件（** 匹配任意深度的子目录）
+  //   - "src/**/*.vue"：src 目录下所有 .vue 单文件组件
   "include": ["env.d.ts", "src/**/*", "src/**/*.vue"],
+
+  // 【技术学习】exclude —— 指定哪些文件需要被排除
+  //   - "src/**/__tests__/*"：排除所有 __tests__ 目录下的测试文件
+  //   - 测试文件通常使用不同的类型配置（如包含 Jest/Vitest 的全局类型）
+  //   - 排除后可以避免测试代码影响应用代码的类型检查
   "exclude": ["src/**/__tests__/*"],
+
   "compilerOptions": {
-    // Extra safety for array and object lookups, but may have false positives.
+    // 【技术学习】noUncheckedIndexedAccess —— 增强数组和对象索引访问的类型安全
+    //
+    // 开启前：
+    //   const arr: string[] = ["a", "b"];
+    //   const item = arr[0];  // 类型是 string（但实际可能是 undefined！）
+    //
+    // 开启后：
+    //   const arr: string[] = ["a", "b"];
+    //   const item = arr[0];  // 类型是 string | undefined（更安全）
+    //   // 你必须先判断 item 是否存在才能使用
+    //   if (item) { console.log(item.toUpperCase()); }
+    //
+    // 作用：防止数组越界访问和对象可能不存在的属性访问导致运行时错误
+    // 代价：可能会产生一些误报（false positives），需要额外的类型守卫
     "noUncheckedIndexedAccess": true,
 
-    // Path mapping for cleaner imports.
+    // 【技术学习】paths —— 路径映射（路径别名）
+    // 将 "@/*" 映射到 "./src/*"，与 vite.config.ts 中的 alias 配置保持一致
+    //
+    // 使用效果：
+    //   import { getUser } from '@/api/user'    // 替代 '../../../api/user'
+    //   import { ref } from '@/utils/helpers'    // 路径更清晰、不受文件层级影响
+    //
+    // 【注意】paths 配置只影响 TypeScript 的类型检查和编辑器提示，
+    // 实际的模块解析由 Vite 的 alias 配置负责。两者必须保持一致！
     "paths": {
       "@/*": ["./src/*"]
     },
 
-    // `vue-tsc --build` produces a .tsbuildinfo file for incremental type-checking.
-    // Specified here to keep it out of the root directory.
+    // 【技术学习】tsBuildInfoFile —— 指定增量编译信息文件的输出路径
+    //
+    // 增量编译原理：
+    //   1. vue-tsc --build 首次运行时，将编译状态保存到 .tsbuildinfo 文件
+    //   2. 下次运行时，读取此文件，只重新编译发生变化的文件
+    //   3. 大幅减少重复编译的时间
+    //
+    // 这里指定输出到 node_modules/.tmp/ 目录，保持项目根目录整洁
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo"
   }
 }

@@ -1,213 +1,40 @@
 {
-  // ============================================================================
-  // package.json —— 项目的核心配置文件
-  // ============================================================================
-  // 【技术学习】package.json 是每个 Node.js / 前端项目的"身份证"和"说明书"。
-  // 它记录了：
-  //   1. 项目的基本信息（名称、版本、是否私有）
-  //   2. 可执行的脚本命令（scripts）
-  //   3. 项目运行时依赖的第三方库（dependencies）
-  //   4. 仅在开发阶段使用的工具（devDependencies）
-  //   5. 对运行环境的要求（engines）
-  //
-  // 执行 npm install 时，npm 会读取此文件并自动安装所有依赖。
-  //
-  // 【注意】package.json 虽然是 JSON 格式，但 npm 和 Node.js 使用的 JSON 解析器
-  // （以及 VS Code 等编辑器）支持 JSONC（JSON with Comments）格式，
-  // 因此可以安全地在其中添加 // 注释。
-  // ============================================================================
-
-  // 项目名称（在 npm 生态中标识项目，本项目为私有项目，名称不影响发布）
   "name": "frontend",
-
-  // 项目版本号，遵循 语义化版本（SemVer）规范：主版本.次版本.补丁版本
   "version": "0.0.0",
-
-  // private: true 表示此项目是私有的，不会被意外发布到 npm 公共仓库
   "private": true,
-
-  // 【技术学习】"type": "module" 表示本项目使用 ES Module（ESM）模块系统
-  // 这意味着：
-  //   - .js 文件默认使用 import/export 语法（而非 CommonJS 的 require/module.exports）
-  //   - 这是现代前端项目的标准配置，与 Vite 等构建工具天然配合
-  //   - Node.js 14+ 开始支持 ESM，设置此字段后可以直接在 Node 脚本中使用 import
   "type": "module",
-
-  // ============================================================================
-  // scripts —— 可通过 npm run <命令> 执行的脚本
-  // ============================================================================
   "scripts": {
-    // 【技术学习】启动本地开发服务器（Vite Dev Server）
-    // - 提供热更新（HMR）：修改代码后浏览器自动刷新，无需手动刷新页面
-    // - 默认运行在 http://localhost:5173
-    // - 仅用于开发阶段，不会生成最终的生产文件
     "dev": "vite",
-
-    // 【技术学习】执行生产环境构建
-    // - run-p（来自 npm-run-all2 包）表示"并行执行"多个命令
-    // - 这里同时执行 type-check（类型检查）和 build-only（实际打包）
-    // - 先确保 TypeScript 类型无误，再生成最终的生产文件
-    // - 构建产物默认输出到 dist/ 目录
     "build": "run-p type-check \"build-only {@}\" --",
-
-    // 【技术学习】预览生产构建的结果
-    // - 启动一个本地静态文件服务器来预览 dist/ 目录中的构建产物
-    // - 用于在部署前验证构建结果是否正确
     "preview": "vite preview",
-
-    // 仅执行 Vite 构建（不进行类型检查），被 build 脚本内部调用
     "build-only": "vite build",
-
-    // 【技术学习】使用 vue-tsc 对项目进行 TypeScript 类型检查
-    // - vue-tsc 是专门为 Vue 项目定制的 TypeScript 检查工具
-    // - 能正确解析 .vue 单文件组件中的 <script lang="ts"> 代码
-    // - --build 模式启用增量编译，速度更快
     "type-check": "vue-tsc --build",
-
-    // 【技术学习】使用 Prettier 格式化 src/ 目录下的所有代码
-    // - Prettier 是一个"有主见"的代码格式化工具，统一代码风格
-    // - --write 表示直接修改文件（而非仅检查）
-    // - --experimental-cli 是 Prettier 新版的实验性 CLI 模式
     "format": "prettier --write --experimental-cli src/"
   },
-
-  // ============================================================================
-  // dependencies —— 生产环境依赖
-  // 这些库会被打包到最终的生产代码中，运行时必需
-  // ============================================================================
   "dependencies": {
-    // 【技术学习】Element Plus 的官方图标库
-    // - 提供丰富的 SVG 图标组件，可直接在模板中使用，如 <Edit />、<Delete />
-    // - 与 Element Plus UI 框架配合使用
     "@element-plus/icons-vue": "^2.3.2",
-
-    // 【技术学习】axios —— 基于 Promise 的 HTTP 客户端
-    // - 用于向后端 API 发送 HTTP 请求（GET、POST、PUT、DELETE 等）
-    // - 支持请求/响应拦截器、自动转换 JSON 数据、取消请求等功能
-    // - 相比原生 fetch()，axios 在错误处理和兼容性方面更友好
     "axios": "^1.16.1",
-
-    // 【技术学习】Element Plus —— Vue 3 的桌面端 UI 组件库
-    // - 提供按钮、表单、表格、对话框、通知等丰富的 UI 组件
-    // - 基于 Vue 3 Composition API 构建
-    // - 官方文档：https://element-plus.org/
     "element-plus": "^2.14.0",
-
-    // 【技术学习】Pinia —— Vue 3 官方推荐的状态管理库
-    // - 用于在多个组件之间共享和管理全局状态（如用户登录信息、主题设置等）
-    // - 是 Vuex 的继任者，API 更简洁，完美支持 TypeScript
-    // - 支持 Vue DevTools 调试
     "pinia": "^3.0.4",
-
-    // 【技术学习】socket.io-client —— Socket.IO 的客户端库
-    // - 用于与后端建立 WebSocket 实时双向通信连接
-    // - 支持自动重连、房间（room）、命名空间（namespace）等高级功能
-    // - 本项目中用于实现抢答等实时交互功能
     "socket.io-client": "^4.8.3",
-
-    // 【技术学习】Vue.js 3 —— 渐进式 JavaScript 框架
-    // - 本项目的核心框架，用于构建用户界面
-    // - 采用响应式数据绑定 + 组件化架构
-    // - Vue 3 引入了 Composition API，代码组织更灵活
     "vue": "^3.5.32",
-
-    // 【技术学习】Vue Router 5 —— Vue.js 的官方路由管理器
-    // - 实现 SPA（单页应用）中的页面导航，URL 变化时不刷新整个页面
-    // - 支持嵌套路由、路由守卫（权限控制）、动态路由等
-    // - 版本 5 对应 Vue 3
     "vue-router": "^5.0.4",
-
-    // 【技术学习】xlsx（SheetJS）—— 电子表格文件处理库
-    // - 用于在浏览器中读取、解析和生成 Excel（.xlsx/.xls）文件
-    // - 本项目可能用于导出抢答结果等数据为 Excel 格式
     "xlsx": "^0.18.5"
   },
-
-  // ============================================================================
-  // devDependencies —— 开发环境依赖
-  // 这些工具仅在开发阶段使用，不会包含在最终的生产代码中
-  // ============================================================================
   "devDependencies": {
-    // 【技术学习】Node.js 24 的 TypeScript 配置预设
-    // - 提供 tsconfig.json 中 extends 的基础配置
-    // - 包含适合 Node.js 24 环境的编译器选项默认值
     "@tsconfig/node24": "^24.0.4",
-
-    // 【技术学习】Node.js 的 TypeScript 类型声明
-    // - 为 Node.js 内置模块（如 fs、path、url）提供 TypeScript 类型定义
-    // - 让 TypeScript 编辑器能正确提示 Node.js API 的参数和返回值
     "@types/node": "^24.12.2",
-
-    // 【技术学习】Vite 的 Vue 3 插件
-    // - 让 Vite 能够识别和编译 .vue 单文件组件（SFC）
-    // - 处理 <template>、<script>、<style> 三个代码块的转换
-    // - 没有此插件，Vite 无法理解 .vue 文件
     "@vitejs/plugin-vue": "^6.0.6",
-
-    // 【技术学习】Vue 官方的 TypeScript 配置预设
-    // - 为 Vue 项目提供推荐的 tsconfig.json 基础配置
-    // - 包含适合 Vue 3 + TypeScript 的编译器选项
     "@vue/tsconfig": "^0.9.1",
-
-    // 【技术学习】npm-run-all2 —— 并行或串行执行多个 npm 脚本的工具
-    // - run-p：并行执行（parallel）
-    // - run-s：串行执行（sequential）
-    // - package.json 中的 build 脚本使用了 run-p 来同时运行类型检查和构建
     "npm-run-all2": "^8.0.4",
-
-    // 【技术学习】Prettier —— 代码格式化工具
-    // - 自动统一代码风格（缩进、引号、分号、换行等）
-    // - 支持多种语言：JS、TS、CSS、HTML、JSON、Markdown 等
-    // - 与 ESLint 不同，Prettier 只关心格式，不关心代码质量
     "prettier": "3.8.3",
-
-    // 【技术学习】TypeScript —— JavaScript 的超集，添加了静态类型系统
-    // - 在编译时检查类型错误，减少运行时 Bug
-    // - 提供更好的代码补全、重构和文档提示
-    // - ~6.0.0 表示仅允许补丁版本更新（如 6.0.1、6.0.2）
     "typescript": "~6.0.0",
-
-    // 【技术学习】unplugin-auto-import —— 自动导入 API 的插件
-    // - 自动导入 Vue 的 ref、reactive、computed 等 API，无需手动写 import
-    // - 自动导入 Vue Router 的 useRouter、useRoute 等 API
-    // - 同时支持 Element Plus 等库的按需导入
-    // - 自动生成类型声明文件，TypeScript 依然能正确推断类型
     "unplugin-auto-import": "^21.0.0",
-
-    // 【技术学习】unplugin-vue-components —— Vue 组件自动注册插件
-    // - 在模板中使用组件时自动导入和注册，无需手动 import + components 注册
-    // - 配合 ElementPlusResolver 实现 Element Plus 组件的按需自动导入
-    // - 减少样板代码，提升开发效率
     "unplugin-vue-components": "^32.0.0",
-
-    // 【技术学习】Vite —— 下一代前端构建工具
-    // - 开发阶段：利用浏览器原生 ESM 实现极速冷启动，无需打包
-    // - 生产阶段：使用 Rollup 进行高效打包，输出优化后的静态资源
-    // - 相比 Webpack，Vite 的开发服务器启动速度极快（毫秒级）
-    // - 官方文档：https://vite.dev/
     "vite": "^8.0.8",
-
-    // 【技术学习】Vue DevTools 插件 —— Vite 集成版
-    // - 在浏览器中提供 Vue 组件树、状态、路由等可视化调试面板
-    // - 开发时可以实时查看和修改组件的 props、data、computed 等
-    // - 仅在开发模式下启用，不影响生产构建
     "vite-plugin-vue-devtools": "^8.1.1",
-
-    // 【技术学习】vue-tsc —— Vue 项目的 TypeScript 命令行检查工具
-    // - 基于 tsc（TypeScript 编译器），增加了对 .vue 文件的支持
-    // - 可以在命令行或 CI/CD 流程中检查 Vue 项目的类型错误
-    // - 不会生成 JavaScript 文件，仅做类型检查
     "vue-tsc": "^3.2.6"
   },
-
-  // ============================================================================
-  // engines —— 指定项目运行所需的 Node.js 版本
-  // ============================================================================
-  // 【技术学习】engines 字段告诉 npm 本项目需要的 Node.js 版本范围
-  // - ^20.19.0：Node.js 20.19.0 及以上（但低于 21.0.0）
-  // - >=22.12.0：Node.js 22.12.0 及以上的任何版本
-  // - 使用不符合要求的 Node.js 版本时，npm 会发出警告
-  // - 项目使用了较新的特性（如 Vite 8、TypeScript 6），因此需要 Node.js 20+ 或 22+
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
   }

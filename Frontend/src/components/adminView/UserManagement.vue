@@ -638,7 +638,7 @@ async function onDeleteAllScores() {
             v-model="form.password"
             type="password"
             :placeholder="editingId ? '留空则不修改密码' : '请输入密码'"
-            show-password  <!-- show-password 显示密码切换按钮 -->
+            show-password
           />
         </el-form-item>
         <el-form-item label="角色" prop="role">

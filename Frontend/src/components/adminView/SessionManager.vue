@@ -98,7 +98,7 @@ const pageCards: PageCardDef[] = [
           v-for="card in pageCards"
           :key="card.key"
           class="stat-item"
-          :style="{ '--c': card.color }"  <!-- CSS 变量，用于自定义颜色 -->
+          :style="{ '--c': card.color }"
         >
           <!-- 图标圆角方块 -->
           <div class="stat-icon" :style="{ background: card.color }">

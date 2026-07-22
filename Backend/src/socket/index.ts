@@ -69,7 +69,7 @@ interface SessionInfo {
   /** 昵称（选手页才有） */
   nickname?: string;
 }
-const pageSessions = new Map<string, string>();
+const pageSessions = new Map<string, SessionInfo>();
 
 /** 获取状态并注入选手答题状态（内部辅助函数） */
 function getStateWithStatuses() {

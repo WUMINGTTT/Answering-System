@@ -1,20 +1,10 @@
-/**
- * 【技术学习】首页组件 HomeView.vue
- *
- * 这是应用的首页，主要功能：
- * 1. 显示应用标题和描述
- * 2. 提供导航卡片，让用户快速跳转到不同页面
- * 3. 注册 Socket.IO 会话，用于在线状态追踪
- *
- * 设计特点：
- * - 使用 CSS Grid 实现卡片网格布局
- * - 卡片有悬停动画效果
- * - 支持响应式设计，在手机上自动切换为单列布局
- */
+/** * 【技术学习】首页组件 HomeView.vue * * 这是应用的首页，主要功能： * 1. 显示应用标题和描述 * 2.
+提供导航卡片，让用户快速跳转到不同页面 * 3. 注册 Socket.IO 会话，用于在线状态追踪 * * 设计特点： * -
+使用 CSS Grid 实现卡片网格布局 * - 卡片有悬停动画效果 * - 支持响应式设计，在手机上自动切换为单列布局
+*/
 
 <!-- ==================== 脚本部分 ==================== -->
 <script setup lang="ts">
-
 // -------------------- 导入依赖 --------------------
 
 // 导入 Vue Router 的 useRouter 钩子
@@ -57,7 +47,7 @@ useSocket({ syncRemote: false, pageType: 'home' })
 interface NavCard {
   title: string
   description: string
-  icon: typeof User  // 图标组件的类型
+  icon: typeof User // 图标组件的类型
   url: string
   color: string
 }
@@ -80,30 +70,30 @@ const cards: NavCard[] = [
   {
     title: '登录页',
     description: '选手注册与登录入口',
-    icon: Key,           // 钥匙图标，代表登录
-    url: '/login',       // 跳转地址
-    color: '#409eff',    // 蓝色主题
+    icon: Key, // 钥匙图标，代表登录
+    url: '/login', // 跳转地址
+    color: '#409eff', // 蓝色主题
   },
   {
     title: '选手页',
     description: '答题与得分查看',
-    icon: User,          // 用户图标
+    icon: User, // 用户图标
     url: '/player',
-    color: '#67c23a',    // 绿色主题
+    color: '#67c23a', // 绿色主题
   },
   {
     title: '管理页',
     description: '题目与用户管理后台',
-    icon: Setting,       // 设置图标
+    icon: Setting, // 设置图标
     url: '/admin',
-    color: '#e6a23c',    // 橙色主题
+    color: '#e6a23c', // 橙色主题
   },
   {
     title: '显示页',
     description: '实时得分公开展示',
-    icon: Monitor,       // 显示器图标
+    icon: Monitor, // 显示器图标
     url: '/display',
-    color: '#f56c6c',    // 红色主题
+    color: '#f56c6c', // 红色主题
   },
 ]
 
@@ -128,7 +118,6 @@ function navigateTo(url: string): void {
 <template>
   <!-- 首页容器 -->
   <div class="home-page">
-
     <!-- Hero 区域：显示应用标题和副标题 -->
     <div class="hero">
       <h1 class="hero-title">答题系统</h1>
@@ -146,9 +135,9 @@ function navigateTo(url: string): void {
         v-for="card in cards"
         :key="card.url"
         class="nav-card"
-        shadow="hover"                    <!-- 悬停时显示阴影 -->
-        :body-style="{ padding: '0' }"    <!-- 移除卡片默认内边距 -->
-        @click="navigateTo(card.url)"     <!-- 点击时触发导航 -->
+        shadow="hover"
+        :body-style="{ padding: '0' }"
+        @click="navigateTo(card.url)"
       >
         <div class="card-inner">
           <!-- 图标区域 -->
@@ -187,29 +176,29 @@ function navigateTo(url: string): void {
 <style scoped>
 /* 首页容器 */
 .home-page {
-  min-height: 100vh;          /* 最小高度为视口高度 */
-  display: flex;               /* 使用 Flexbox 布局 */
-  flex-direction: column;      /* 垂直排列子元素 */
-  align-items: center;         /* 水平居中 */
-  justify-content: center;     /* 垂直居中 */
-  background: linear-gradient(135deg, #f5f7fa 0%, #e4e7ed 100%);  /* 渐变背景 */
-  padding: 40px 20px;         /* 内边距 */
-  box-sizing: border-box;      /* 让 padding 包含在宽度内 */
+  min-height: 100vh; /* 最小高度为视口高度 */
+  display: flex; /* 使用 Flexbox 布局 */
+  flex-direction: column; /* 垂直排列子元素 */
+  align-items: center; /* 水平居中 */
+  justify-content: center; /* 垂直居中 */
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4e7ed 100%); /* 渐变背景 */
+  padding: 40px 20px; /* 内边距 */
+  box-sizing: border-box; /* 让 padding 包含在宽度内 */
 }
 
 /* Hero 区域 */
 .hero {
-  text-align: center;          /* 文字居中 */
-  margin-bottom: 48px;        /* 与下方卡片的间距 */
+  text-align: center; /* 文字居中 */
+  margin-bottom: 48px; /* 与下方卡片的间距 */
 }
 
 /* 主标题 */
 .hero-title {
   font-size: 40px;
-  font-weight: 700;           /* 粗体 */
+  font-weight: 700; /* 粗体 */
   color: #303133;
   margin: 0 0 12px 0;
-  letter-spacing: 2px;        /* 字符间距，增加大气感 */
+  letter-spacing: 2px; /* 字符间距，增加大气感 */
 }
 
 /* 副标题 */
@@ -217,7 +206,7 @@ function navigateTo(url: string): void {
   font-size: 16px;
   color: #909399;
   margin: 0;
-  letter-spacing: 4px;        /* 更大的字符间距 */
+  letter-spacing: 4px; /* 更大的字符间距 */
 }
 
 /*
@@ -233,48 +222,50 @@ function navigateTo(url: string): void {
   display: grid;
   grid-template-columns: repeat(2, 280px);
   gap: 24px;
-  max-width: 585px;           /* 最大宽度限制 */
-  width: 100%;                /* 响应式：宽度自适应 */
+  max-width: 585px; /* 最大宽度限制 */
+  width: 100%; /* 响应式：宽度自适应 */
 }
 
 /* 导航卡片 */
 .nav-card {
-  cursor: pointer;            /* 鼠标指针变为手型 */
-  border-radius: 12px;       /* 圆角 */
-  transition: transform 0.25s ease, box-shadow 0.25s ease;  /* 过渡动画 */
+  cursor: pointer; /* 鼠标指针变为手型 */
+  border-radius: 12px; /* 圆角 */
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease; /* 过渡动画 */
   border: 1px solid #ebeef5;
 }
 
 /* 卡片悬停效果 */
 .nav-card:hover {
-  transform: translateY(-4px);  /* 向上移动 4px */
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);  /* 更明显的阴影 */
+  transform: translateY(-4px); /* 向上移动 4px */
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); /* 更明显的阴影 */
 }
 
 /* 卡片内部布局 */
 .card-inner {
-  display: flex;               /* Flexbox 水平布局 */
-  align-items: center;         /* 垂直居中 */
+  display: flex; /* Flexbox 水平布局 */
+  align-items: center; /* 垂直居中 */
   padding: 24px 20px;
-  gap: 16px;                  /* 元素间距 */
+  gap: 16px; /* 元素间距 */
 }
 
 /* 图标容器 */
 .card-icon {
   width: 64px;
   height: 64px;
-  border-radius: 14px;       /* 圆角矩形 */
+  border-radius: 14px; /* 圆角矩形 */
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;               /* 白色图标 */
-  flex-shrink: 0;            /* 不允许缩小 */
+  color: #fff; /* 白色图标 */
+  flex-shrink: 0; /* 不允许缩小 */
 }
 
 /* 文字内容区域 */
 .card-body {
-  flex: 1;                   /* 占据剩余空间 */
-  min-width: 0;              /* 防止文字溢出 */
+  flex: 1; /* 占据剩余空间 */
+  min-width: 0; /* 防止文字溢出 */
 }
 
 /* 卡片标题 */
@@ -297,13 +288,15 @@ function navigateTo(url: string): void {
 .card-arrow {
   color: #c0c4cc;
   flex-shrink: 0;
-  transition: transform 0.25s ease, color 0.25s ease;  /* 过渡动画 */
+  transition:
+    transform 0.25s ease,
+    color 0.25s ease; /* 过渡动画 */
 }
 
 /* 悬停时箭头向右移动并变色 */
 .nav-card:hover .card-arrow {
   transform: translateX(4px);
-  color: #409eff;            /* 变为主题色 */
+  color: #409eff; /* 变为主题色 */
 }
 
 /*
@@ -319,7 +312,7 @@ function navigateTo(url: string): void {
  */
 @media (max-width: 640px) {
   .card-grid {
-    grid-template-columns: 1fr;  /* 单列布局，1fr 表示占据全部宽度 */
+    grid-template-columns: 1fr; /* 单列布局，1fr 表示占据全部宽度 */
     max-width: 320px;
   }
 
